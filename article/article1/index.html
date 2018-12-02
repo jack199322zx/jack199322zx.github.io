@@ -14,11 +14,11 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <title>
         
-          [Hexo] Hexo建站笔录 - Nino | Blog
+          [java基础] 类加载机制 - Nino | Blog
         
     </title>
 
-    <link rel="canonical" href="http://www.52nino.cn/article/page/">
+    <link rel="canonical" href="http://www.52nino.cn/article/article1/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -69,7 +69,7 @@
 <style type="text/css">
     header.intro-header{
         
-            background-image: url('/img/article_header/youshen.jpg')
+            background-image: url('/img/article_header/article_header.png')
             /*post*/
         
     }
@@ -86,14 +86,14 @@
                     <div class="post-heading">
                         <div class="tags">
                             
-                              <a class="tag" href="/tags/#Hexo" title="Hexo">Hexo</a>
+                              <a class="tag" href="/tags/#java基础" title="java基础">java基础</a>
                             
                         </div>
-                        <h1>[Hexo] Hexo建站笔录</h1>
-                        <h2 class="subheading">分享hexo结合github pages建立个人博客的经验</h2>
+                        <h1>[java基础] 类加载机制</h1>
+                        <h2 class="subheading">关于类加载机制的探讨，分享一些心得</h2>
                         <span class="meta">
                             Posted by Nino on
-                            2018-10-23
+                            2018-12-02
                         </span>
                     </div>
                 
@@ -210,22 +210,31 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <blockquote>
-<p>你是否也想搭建个人博客？这里教大家一个免费搭建个人博客的方法。</p>
-</blockquote>
-<h1 id="写在开篇之前"><a href="#写在开篇之前" class="headerlink" title="写在开篇之前"></a>写在开篇之前</h1><p>当你想要搭建个人博客的网站，却为负担昂贵的服务器费用而苦恼，那么本文为您提供了一个解决方案。</p>
-<p><img src="/img/article/overview.png" alt="overview"></p>
-<h1 id="let’s-begin"><a href="#let’s-begin" class="headerlink" title="let’s begin"></a>let’s begin</h1><p>前提准备：搭建好 node 和 git环境， 准备一个github账号。<br>关于环境搭建可以参考下边的一篇博文，里面已经讲解的比较详细。<br><a href="https://blog.csdn.net/ainuser/article/details/77609180" target="_blank" rel="noopener">https://blog.csdn.net/ainuser/article/details/77609180</a></p>
-<p>安装hexo及部署插件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br><span class="line">npm install hexo-deployer-git --save</span><br><span class="line"><span class="meta">#</span>For more:https://hexo.io/zh-cn/index.html</span><br></pre></td></tr></table></figure>
-<p>安装完成之后，通过执行以下代码启动hexo本地服务<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hexo init blog</span><br><span class="line">cd /blog</span><br><span class="line">npm install (如果npm下载缓慢可用cnpm淘宝镜像下载)</span><br><span class="line">hexo generate (生成静态页面，默认在public文件夹下)</span><br><span class="line">hexo server (启动服务，默认监听4000端口)</span><br></pre></td></tr></table></figure></p>
-<p>然后我们在浏览器访问localhost:4000，可以看到如下图片，则表示服务启动成功！<br><img src="/img/article/default.png" alt="default"></p>
-<h1 id="then"><a href="#then" class="headerlink" title="then"></a>then</h1><p>登录github账号，创建一个仓库。<br><img src="/img/article/github1.png" alt="github_1"><br>这里需要注意的是，仓库的名称必须是username.github.io<br><img src="/img/article/github2.png" alt="github_2"><br>创建的过程中可能会有些漫长，需要等待一段时间方可访问。<br><img src="/img/article/github3.png" alt="github_3"><br>进入刚创建的仓库，打开Settings，找到github pages<br><img src="/img/article/github4.png" alt="github_4"><br>可以配置自定义域名映射，也就是可以域名解析到阿里云域名等。<br>这里要注意个人网站的代码只能提交到master主分支，且不可修改。否则是无法展示你提交的页面的。</p>
-<h2 id="github-ssh配置"><a href="#github-ssh配置" class="headerlink" title="github ssh配置"></a>github ssh配置</h2><p>github账号配置完成之后，需要配置ssh，方便hexo的部署。<br>本地通过 ssh-keygen -t rsa -C 邮箱地址<br>创建密匙，最后得到了两个文件：id_rsa（私匙）和id_rsa.pub（公匙）<br>打开id_rsa.pub，将其中的内容复制到github账号的ssh keys设置中。<br>输入ssh -T <a href="mailto:git@github.com" target="_blank" rel="noopener">git@github.com</a>，测试添加ssh是否成功。<br>可以参考另一篇博文<a href="https://www.cnblogs.com/fengxiongZz/p/7707219.html" target="_blank" rel="noopener">https://www.cnblogs.com/fengxiongZz/p/7707219.html</a></p>
-<h1 id="last"><a href="#last" class="headerlink" title="last"></a>last</h1><p>修改_config.yml<br>在deploy下设置repository: ssh://…（你的仓库地址）<br>执行hexo clean, hexo generate, hexo deploy。（以后只要改动了代码，都可以通过这种方式发布）<br>最后访问你的github pages，如zhangsan.github.io，看到最新的页面即发布成功。</p>
-<h2 id="友情提醒"><a href="#友情提醒" class="headerlink" title="友情提醒"></a>友情提醒</h2><p>关于hexo _config.yml文件的配置可以参考<a href="https://www.jianshu.com/p/0fe7dd8a0e8b?winzoom=1" target="_blank" rel="noopener">https://www.jianshu.com/p/0fe7dd8a0e8b?winzoom=1</a><br>关于hexo修改主题可以参考<a href="https://www.jianshu.com/p/33bc0a0a6e90" target="_blank" rel="noopener">https://www.jianshu.com/p/33bc0a0a6e90</a></p>
-<!-- Place this tag in your head or just before your close body tag. -->
-<p><script async defer src="https://buttons.github.io/buttons.js"></script><br><!-- Place this tag where you want the button to render. --></p>
+                <h1 id="举个栗子"><a href="#举个栗子" class="headerlink" title="举个栗子"></a>举个栗子</h1><p>下面是一段java代码，请分析类加载的整个过程。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">public class Child extends Parent &#123;</span><br><span class="line">    public static int a = print();</span><br><span class="line"></span><br><span class="line">    Child () &#123;</span><br><span class="line">        System.out.println("i'm child constructor");</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static int print() &#123;</span><br><span class="line">        System.out.println("i'm child print");</span><br><span class="line">        return 6;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        System.out.println("main start");</span><br><span class="line">        System.out.println(a);</span><br><span class="line">        System.out.println(Parent.a);</span><br><span class="line">        Child child = new Child();</span><br><span class="line">        Parent parent = new Child();</span><br><span class="line">        System.out.println(child.a);</span><br><span class="line">        System.out.println(parent.a);</span><br><span class="line">        System.out.println(parent.getClass());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class Parent &#123;</span><br><span class="line">    public static int a = print();</span><br><span class="line"></span><br><span class="line">    Parent () &#123;</span><br><span class="line">        System.out.println("i'm parent constructor");</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static int print() &#123;</span><br><span class="line">        System.out.println("i'm parent print");</span><br><span class="line">        return 5;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上边程序的执行结果如下：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">i'm parent print</span><br><span class="line">i'm child print</span><br><span class="line">main start</span><br><span class="line">6</span><br><span class="line">5</span><br><span class="line">i'm parent constructor</span><br><span class="line">i'm child constructor</span><br><span class="line">i'm parent constructor</span><br><span class="line">i'm child constructor</span><br><span class="line">6</span><br><span class="line">5</span><br><span class="line">class cn.raiyee.fco.glass.Child</span><br></pre></td></tr></table></figure></p>
+<h1 id="运行结果分析"><a href="#运行结果分析" class="headerlink" title="运行结果分析"></a>运行结果分析</h1><p>分析一下整个过程：<br>首先main方法启动会先加载类文件到方法区中，这里由于Child类继承自父类Parent，<br>优先加载Parent，初始化所有static域，这边优先执行Parent类的print()方法。<br>其次加载子类，同理初始化所有static域，这里要注意的是static方法可以被继承而不能被重写。<br>这里子类执行自己的print()方法是隐藏了对父类方法的隐藏。<br>加载完成之后，main方法启动，打印main start，<br>Child child = new Child()初始化了Child类，由于Child类已经被加载过，<br>因此不会再去加载static域，会调用构造器的继承关系优先创建父类，其次创建自己。<br>最后需要注意的是向上造型之后的parent的域a是自身的而不是子类的，但parent的类型是Child.class。</p>
+<h1 id="进阶"><a href="#进阶" class="headerlink" title="进阶"></a>进阶</h1><h2 id="类加载过程"><a href="#类加载过程" class="headerlink" title="类加载过程"></a>类加载过程</h2><p>类加载分为三个步骤：加载，连接，初始化；</p>
+<p>如下图 , 是一个类从加载到使用及卸载的全部生命周期，图片来自参考资料；</p>
+<p><img src="/img/article/prepare.png" alt="prepare"></p>
+<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>根据一个类的全限定名(如cn.edu.hdu.test.HelloWorld.class)来读取此类的二进制字节流到JVM内部;</p>
+<p>将字节流所代表的静态存储结构转换为方法区的运行时数据结构（hotspot选择将Class对象存储在方法区中，Java虚拟机规范并没有明确要求一定要存储在方法区或堆区中）</p>
+<p>转换为一个与目标类型对应的java.lang.Class对象；</p>
+<h2 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h2><h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>验证阶段主要包括四个检验过程：文件格式验证、元数据验证、字节码验证和符号引用验证;</p>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>为类中的所有静态变量分配内存空间，并为其设置一个初始值（由于还没有产生对象，实例变量将不再此操作范围内）；</p>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>将常量池中所有的符号引用转为直接引用（得到类或者字段、方法在内存中的指针或者偏移量，以便直接调用该方法）。这个阶段可以在初始化之后再执行。</p>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>在连接的准备阶段，类变量已赋过一次系统要求的初始值，而在初始化阶段，则是根据程序员自己写的逻辑去初始化类变量和其他资源，举个例子如下：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public static int value1  = 5;</span><br><span class="line">public static int value2  = 6;</span><br><span class="line">static&#123;</span><br><span class="line">    value2 = 66;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在准备阶段value1和value2都等于0；<br>在初始化阶段value1和value2分别等于5和66；<br>所有类变量初始化语句和静态代码块都会在编译时被前端编译器放在收集器里头，存放到一个特殊的方法中，这个方法就是<clinit>方法，即类/接口初始化方法，该方法只能在类加载的过程中由JVM调用；<br>编译器收集的顺序是由语句在源文件中出现的顺序所决定的，静态语句块中只能访问到定义在静态语句块之前的变量；<br>如果超类还没有被初始化，那么优先对超类初始化，但在<clinit>方法内部不会显示调用超类的<clinit>方法，由JVM负责保证一个类的<clinit>方法执行之前，它的超类<clinit>方法已经被执行。<br>JVM必须确保一个类在初始化的过程中，如果是多线程需要同时初始化它，仅仅只能允许其中一个线程对其执行初始化操作，其余线程必须等待，只有在活动线程执行完对类的初始化操作之后，才会通知正在等待的其他线程。(所以可以利用静态内部类实现线程安全的单例模式)<br>如果一个类没有声明任何的类变量，也没有静态代码块，那么可以没有类<clinit>方法；</clinit></clinit></clinit></clinit></clinit></clinit></p>
+<p>何时触发初始化？</p>
+<p>1.为一个类型创建一个新的对象实例时（比如new、反射、序列化）<br>2.调用一个类型的静态方法时（即在字节码中执行invokestatic指令）<br>3.调用一个类型或接口的静态字段，或者对这些静态字段执行赋值操作时（即在字节码中，执行getstatic或者putstatic指令），不过用final修饰的静态字段除外，它被初始化为一个编译时常量表达式<br>4.调用JavaAPI中的反射方法时（比如调用java.lang.Class中的方法，或者java.lang.reflect包中其他类的方法）<br>5.初始化一个类的派生类时（Java虚拟机规范明确要求初始化一个类时，它的超类必须提前完成初始化操作，接口例外）<br>6.JVM启动包含main方法的启动类时。</p>
+<h2 id="类加载器与类的”相同“判断"><a href="#类加载器与类的”相同“判断" class="headerlink" title="类加载器与类的”相同“判断"></a>类加载器与类的”相同“判断</h2><p>类加载器除了用于加载类外，还可用于确定类在Java虚拟机中的唯一性。</p>
+<p>即便是同样的字节代码，被不同的类加载器加载之后所得到的类，也是不同的。</p>
+<p>通俗一点来讲，要判断两个类是否“相同”，前提是这两个类必须被同一个类加载器加载，否则这个两个类不“相同”。<br>这里指的“相同”，包括类的Class对象的equals()方法、isAssignableFrom()方法、isInstance()方法、instanceof关键字等判断出来的结果。</p>
+<h2 id="类加载器种类"><a href="#类加载器种类" class="headerlink" title="类加载器种类"></a>类加载器种类</h2><p>启动类加载器，Bootstrap ClassLoader，加载JACA_HOME\lib，或者被-Xbootclasspath参数限定的类<br>扩展类加载器，Extension ClassLoader，加载\lib\ext，或者被java.ext.dirs系统变量指定的类<br>应用程序类加载器，Application ClassLoader，加载ClassPath中的类库<br>自定义类加载器，通过继承ClassLoader实现，一般是加载我们的自定义类</p>
+<h2 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h2><p>类加载器 Java 类如同其它的 Java 类一样，也是要由类加载器来加载的；除了启动类加载器，每个类都有其父类加载器（父子关系由组合（不是继承）来实现）；</p>
+<p>所谓双亲委派是指每次收到类加载请求时，先将请求委派给父类加载器完成（所有加载请求最终会委派到顶层的Bootstrap ClassLoader加载器中），如果父类加载器无法完成这个加载（该加载器的搜索范围中没有找到对应的类），子类尝试自己加载。</p>
+<p><img src="/img/article/classloader.png" alt="prepare"><br>双亲委派好处</p>
+<p>避免同一个类被多次加载；<br>每个加载器只能加载自己范围内的类；</p>
 
                 
 
@@ -233,13 +242,9 @@
                 <!-- Pager -->
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/article/article1/" data-toggle="tooltip" data-placement="top" title="[java基础] 类加载机制">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/article/blog/" data-toggle="tooltip" data-placement="top" title="[随笔] welcome to my blog">Next Post &rarr;</a>
+                            <a href="/article/page/" data-toggle="tooltip" data-placement="top" title="[Hexo] Hexo建站笔录">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -274,7 +279,7 @@
         <div id="toc" class="toc-article">
         <strong class="toc-title">Contents</strong>
         
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#写在开篇之前"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">写在开篇之前</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#let’s-begin"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">let’s begin</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#then"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">then</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#github-ssh配置"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">github ssh配置</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#last"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">last</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#友情提醒"><span class="toc-nav-number">4.1.</span> <span class="toc-nav-text">友情提醒</span></a></li></ol></li></ol>
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#举个栗子"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">举个栗子</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#运行结果分析"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">运行结果分析</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#进阶"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">进阶</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#类加载过程"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">类加载过程</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#加载"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">加载</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#连接"><span class="toc-nav-number">3.3.</span> <span class="toc-nav-text">连接</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#验证"><span class="toc-nav-number">3.3.1.</span> <span class="toc-nav-text">验证</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#准备"><span class="toc-nav-number">3.3.2.</span> <span class="toc-nav-text">准备</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#解析"><span class="toc-nav-number">3.3.3.</span> <span class="toc-nav-text">解析</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#初始化"><span class="toc-nav-number">3.4.</span> <span class="toc-nav-text">初始化</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#类加载器与类的”相同“判断"><span class="toc-nav-number">3.5.</span> <span class="toc-nav-text">类加载器与类的”相同“判断</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#类加载器种类"><span class="toc-nav-number">3.6.</span> <span class="toc-nav-text">类加载器种类</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#双亲委派模型"><span class="toc-nav-number">3.7.</span> <span class="toc-nav-text">双亲委派模型</span></a></li></ol></li></ol>
         
         </div>
       </aside>
@@ -294,7 +299,7 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#Hexo" title="Hexo">Hexo</a>
+                          <a class="tag" href="/tags/#java基础" title="java基础">java基础</a>
                         
                     </div>
                 </section>
