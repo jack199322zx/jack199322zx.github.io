@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          [spring] spring源码解析（Bean创建过程） - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/article2/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#spring" title="spring">spring</a>
+                            
+                        </div>
+                        <h1>[spring] spring源码解析（Bean创建过程）</h1>
+                        <h2 class="subheading">关于spring源码bean创建过程，分享一些心得</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2018-12-03
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="话前"><a href="#话前" class="headerlink" title="话前"></a>话前</h1><p>spring容器的创建过程可分为基于注解和基于xml两种方式。当前主流的应用已采用springboot的简化版本，因此探讨一下基于注解的创建方式很有必要。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="核心类"><a href="#核心类" class="headerlink" title="核心类"></a>核心类</h2><p>AnnotationConfigApplicationContext，DefaultListableBeanFactory，<br>BeanPostProcessor</p>
+<h2 id="创建Bean过程"><a href="#创建Bean过程" class="headerlink" title="创建Bean过程"></a>创建Bean过程</h2><p>我们从AnnotationConfigApplicationContext的创建开始谈起，new AnnotationConfigApplicationContext(Configure)进入到构造方法。<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">public AnnotationConfigApplicationContext(Class&lt;?&gt;... annotatedClasses) &#123;</span><br><span class="line">  		this();</span><br><span class="line">  		register(annotatedClasses);</span><br><span class="line">  		refresh();</span><br><span class="line">  	&#125;</span><br></pre></td></tr></table></figure></p>
+<p>进入到register(annotatedClasses)方法，实际上是委派给了AnnotatedBeanDefinitionReader的register(annotatedClasses)方法。遍历配置类，依次registerBean(annotatedClass, null, (Class&lt;? extends Annotation&gt;[]) null)，核心代码如下：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">public void registerBean(Class&lt;?&gt; annotatedClass, String name, Class&lt;? extends Annotation&gt;... qualifiers) &#123;</span><br><span class="line">	AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(annotatedClass);</span><br><span class="line">	if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) &#123;</span><br><span class="line">		return;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);</span><br><span class="line">	abd.setScope(scopeMetadata.getScopeName());</span><br><span class="line">	String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));</span><br><span class="line">	AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);</span><br><span class="line">	if (qualifiers != null) &#123;</span><br><span class="line">		for (Class&lt;? extends Annotation&gt; qualifier : qualifiers) &#123;</span><br><span class="line">			if (Primary.class == qualifier) &#123;</span><br><span class="line">				abd.setPrimary(true);</span><br><span class="line">			&#125;</span><br><span class="line">			else if (Lazy.class == qualifier) &#123;</span><br><span class="line">				abd.setLazyInit(true);</span><br><span class="line">			&#125;</span><br><span class="line">			else &#123;</span><br><span class="line">				abd.addQualifier(new AutowireCandidateQualifier(qualifier));</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);</span><br><span class="line">	definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);</span><br><span class="line">	BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面一段代码的逻辑看似很长，qualifiers参数传递为null，中间的逻辑并未涉及，其实核心就是给BeanRegistry（DefaultListableBeanFactory）中注册了beanDefinition即标注@Configuration注解的类的bean定义信息，下面进入refresh()方法刷新容器：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">public void refresh() throws BeansException, IllegalStateException &#123;</span><br><span class="line">		synchronized (this.startupShutdownMonitor) &#123;</span><br><span class="line">			// Prepare this context for refreshing.</span><br><span class="line">			prepareRefresh();</span><br><span class="line"></span><br><span class="line">			// Tell the subclass to refresh the internal bean factory.</span><br><span class="line">			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();</span><br><span class="line"></span><br><span class="line">			// Prepare the bean factory for use in this context.</span><br><span class="line">			prepareBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">			try &#123;</span><br><span class="line">				// Allows post-processing of the bean factory in context subclasses.</span><br><span class="line">				postProcessBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">				// Invoke factory processors registered as beans in the context.</span><br><span class="line">				invokeBeanFactoryPostProcessors(beanFactory);</span><br><span class="line"></span><br><span class="line">				// Register bean processors that intercept bean creation.</span><br><span class="line">				registerBeanPostProcessors(beanFactory);</span><br><span class="line"></span><br><span class="line">				// Initialize message source for this context.</span><br><span class="line">				initMessageSource();</span><br><span class="line"></span><br><span class="line">				// Initialize event multicaster for this context.</span><br><span class="line">				initApplicationEventMulticaster();</span><br><span class="line"></span><br><span class="line">				// Initialize other special beans in specific context subclasses.</span><br><span class="line">				onRefresh();</span><br><span class="line"></span><br><span class="line">				// Check for listener beans and register them.</span><br><span class="line">				registerListeners();</span><br><span class="line"></span><br><span class="line">				// Instantiate all remaining (non-lazy-init) singletons.</span><br><span class="line">				finishBeanFactoryInitialization(beanFactory);</span><br><span class="line"></span><br><span class="line">				// Last step: publish corresponding event.</span><br><span class="line">				finishRefresh();</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			catch (BeansException ex) &#123;</span><br><span class="line">				if (logger.isWarnEnabled()) &#123;</span><br><span class="line">					logger.warn("Exception encountered during context initialization - " +</span><br><span class="line">							"cancelling refresh attempt: " + ex);</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">				// Destroy already created singletons to avoid dangling resources.</span><br><span class="line">				destroyBeans();</span><br><span class="line"></span><br><span class="line">				// Reset 'active' flag.</span><br><span class="line">				cancelRefresh(ex);</span><br><span class="line"></span><br><span class="line">				// Propagate exception to caller.</span><br><span class="line">				throw ex;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			finally &#123;</span><br><span class="line">				// Reset common introspection caches in Spring's core, since we</span><br><span class="line">				// might not ever need metadata for singleton beans anymore...</span><br><span class="line">				resetCommonCaches();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="prepareRefresh"><a href="#prepareRefresh" class="headerlink" title="prepareRefresh()"></a>prepareRefresh()</h3><p>容器刷新之前的准备工作，包括对早期事件的集合初始化，必要属性的标记。</p>
+<h3 id="obtainFreshBeanFactory"><a href="#obtainFreshBeanFactory" class="headerlink" title="obtainFreshBeanFactory()"></a>obtainFreshBeanFactory()</h3><p>创建BeanFactory</p>
+<h3 id="prepareBeanFactory-beanFactory"><a href="#prepareBeanFactory-beanFactory" class="headerlink" title="prepareBeanFactory(beanFactory)"></a>prepareBeanFactory(beanFactory)</h3><p>BeanFactory的准备工作，包括设置BeanFactory的类加载器；表达式解析器；属性编辑器注册中心；ApplicationContextAwareProcessor后置处理器；Aware接口的回调；设置已经解析过的依赖如ApplicationContext，以便于在后面自定义创建的类中可以直接使用@Autowired注解来注入ApplicationContext；环境的注册；aspectJ的支持。</p>
+<h3 id="postProcessBeanFactory-beanFactory"><a href="#postProcessBeanFactory-beanFactory" class="headerlink" title="postProcessBeanFactory(beanFactory)"></a>postProcessBeanFactory(beanFactory)</h3><p>支持重写AnnotationConfigApplicationContext的postProcessBeanFactory方法来对beanFactory做一些处理。</p>
+<h3 id="invokeBeanFactoryPostProcessors-beanFactory"><a href="#invokeBeanFactoryPostProcessors-beanFactory" class="headerlink" title="invokeBeanFactoryPostProcessors(beanFactory)"></a>invokeBeanFactoryPostProcessors(beanFactory)</h3><p>交给容器中BeanFactoryPostProcessor执行postProcessBeanDefinitionRegistry()</p>
+<h3 id="registerBeanPostProcessors-beanFactory"><a href="#registerBeanPostProcessors-beanFactory" class="headerlink" title="registerBeanPostProcessors(beanFactory)"></a>registerBeanPostProcessors(beanFactory)</h3><pre><code><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">public static void registerBeanPostProcessors(</span><br><span class="line">			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) &#123;</span><br><span class="line"></span><br><span class="line">		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);</span><br><span class="line"></span><br><span class="line">		// Register BeanPostProcessorChecker that logs an info message when</span><br><span class="line">		// a bean is created during BeanPostProcessor instantiation, i.e. when</span><br><span class="line">		// a bean is not eligible for getting processed by all BeanPostProcessors.</span><br><span class="line">		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;</span><br><span class="line">		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));</span><br><span class="line"></span><br><span class="line">		// Separate between BeanPostProcessors that implement PriorityOrdered,</span><br><span class="line">		// Ordered, and the rest.</span><br><span class="line">		List&lt;BeanPostProcessor&gt; priorityOrderedPostProcessors = new ArrayList&lt;BeanPostProcessor&gt;();</span><br><span class="line">		List&lt;BeanPostProcessor&gt; internalPostProcessors = new ArrayList&lt;BeanPostProcessor&gt;();</span><br><span class="line">		List&lt;String&gt; orderedPostProcessorNames = new ArrayList&lt;String&gt;();</span><br><span class="line">		List&lt;String&gt; nonOrderedPostProcessorNames = new ArrayList&lt;String&gt;();</span><br><span class="line">		for (String ppName : postProcessorNames) &#123;</span><br><span class="line">			if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) &#123;</span><br><span class="line">				BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);</span><br><span class="line">				priorityOrderedPostProcessors.add(pp);</span><br><span class="line">				if (pp instanceof MergedBeanDefinitionPostProcessor) &#123;</span><br><span class="line">					internalPostProcessors.add(pp);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			else if (beanFactory.isTypeMatch(ppName, Ordered.class)) &#123;</span><br><span class="line">				orderedPostProcessorNames.add(ppName);</span><br><span class="line">			&#125;</span><br><span class="line">			else &#123;</span><br><span class="line">				nonOrderedPostProcessorNames.add(ppName);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		// First, register the BeanPostProcessors that implement PriorityOrdered.</span><br><span class="line">		sortPostProcessors(beanFactory, priorityOrderedPostProcessors);</span><br><span class="line">		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);</span><br><span class="line"></span><br><span class="line">		// Next, register the BeanPostProcessors that implement Ordered.</span><br><span class="line">		List&lt;BeanPostProcessor&gt; orderedPostProcessors = new ArrayList&lt;BeanPostProcessor&gt;();</span><br><span class="line">		for (String ppName : orderedPostProcessorNames) &#123;</span><br><span class="line">			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);</span><br><span class="line">			orderedPostProcessors.add(pp);</span><br><span class="line">			if (pp instanceof MergedBeanDefinitionPostProcessor) &#123;</span><br><span class="line">				internalPostProcessors.add(pp);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		sortPostProcessors(beanFactory, orderedPostProcessors);</span><br><span class="line">		registerBeanPostProcessors(beanFactory, orderedPostProcessors);</span><br><span class="line"></span><br><span class="line">		// Now, register all regular BeanPostProcessors.</span><br><span class="line">		List&lt;BeanPostProcessor&gt; nonOrderedPostProcessors = new ArrayList&lt;BeanPostProcessor&gt;();</span><br><span class="line">		for (String ppName : nonOrderedPostProcessorNames) &#123;</span><br><span class="line">			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);</span><br><span class="line">			nonOrderedPostProcessors.add(pp);</span><br><span class="line">			if (pp instanceof MergedBeanDefinitionPostProcessor) &#123;</span><br><span class="line">				internalPostProcessors.add(pp);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		registerBeanPostProcessors(beanFactory, nonOrderedPostProcessors);</span><br><span class="line"></span><br><span class="line">		// Finally, re-register all internal BeanPostProcessors.</span><br><span class="line">		sortPostProcessors(beanFactory, internalPostProcessors);</span><br><span class="line">		registerBeanPostProcessors(beanFactory, internalPostProcessors);</span><br><span class="line"></span><br><span class="line">		beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(applicationContext));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</code></pre><p>给容器中注册beanPostProcessor后置处理器，从容器中bean的定义信息中获取到BeanPostProcessor.class类型，向容器中添加BeanPostProcessorChecker的后置处理器，然后将容器中所有的后置处理器做一个分类，实现PriorityOrdered接口的，Ordered接口的，和都未实现的。首先注册实现PriorityOrdered接口的后置处理器，注册之前将其做了一个排序，其次注册实现Ordered接口的，最后注册常规的，再向容器中注册了ApplicationListenerDetector用于监听容器事件的后置处理器。注册的流程核心方法是beanFactory.getBean(ppName, BeanPostProcessor.class)<br>在此方法中会向容器中创建对应的后置处理器，这里先卖个关子，后面再来解析getBean方法。</p>
+<h3 id="initMessageSource"><a href="#initMessageSource" class="headerlink" title="initMessageSource()"></a>initMessageSource()</h3><p>注册applicationEventMulticaster事件多播器</p>
+<h3 id="onRefresh"><a href="#onRefresh" class="headerlink" title="onRefresh()"></a>onRefresh()</h3><p>支持重写AnnotationConfigApplicationContext的onRefresh()，自定义处理</p>
+<h3 id="registerListeners"><a href="#registerListeners" class="headerlink" title="registerListeners()"></a>registerListeners()</h3><p>注册容器事件ApplicationListener，容器事件的注册参考ApplicationListenerDetector的postProcessAfterInitialization（applicationEventMulticaster的addApplicationListenerBean只是将listenerName存放在set集中），<br>事件的发布参考SimpleApplicationEventMulticaster的multicastEvent—&gt;getApplicationListeners—&gt;ListenerRetriever的getApplicationListeners</p>
+<h3 id="finishBeanFactoryInitialization-beanFactory"><a href="#finishBeanFactoryInitialization-beanFactory" class="headerlink" title="finishBeanFactoryInitialization(beanFactory)"></a>finishBeanFactoryInitialization(beanFactory)</h3><p>核心方法是beanFactory.preInstantiateSingletons，初始化所有剩下的单实例bean。<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// Instantiate all remaining (non-lazy-init) singletons.</span><br><span class="line">   beanFactory.preInstantiateSingletons();</span><br></pre></td></tr></table></figure></p>
+<p>进去看看方法里面具体是什么：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">public void preInstantiateSingletons() throws BeansException &#123;</span><br><span class="line">		if (this.logger.isDebugEnabled()) &#123;</span><br><span class="line">			this.logger.debug("Pre-instantiating singletons in " + this);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		// Iterate over a copy to allow for init methods which in turn register new bean definitions.</span><br><span class="line">		// While this may not be part of the regular factory bootstrap, it does otherwise work fine.</span><br><span class="line">		List&lt;String&gt; beanNames = new ArrayList&lt;String&gt;(this.beanDefinitionNames);</span><br><span class="line"></span><br><span class="line">		// Trigger initialization of all non-lazy singleton beans...</span><br><span class="line">		for (String beanName : beanNames) &#123;</span><br><span class="line">			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);</span><br><span class="line">			if (!bd.isAbstract() &amp;&amp; bd.isSingleton() &amp;&amp; !bd.isLazyInit()) &#123;</span><br><span class="line">				if (isFactoryBean(beanName)) &#123;</span><br><span class="line">					final FactoryBean&lt;?&gt; factory = (FactoryBean&lt;?&gt;) getBean(FACTORY_BEAN_PREFIX + beanName);</span><br><span class="line">					boolean isEagerInit;</span><br><span class="line">					if (System.getSecurityManager() != null &amp;&amp; factory instanceof SmartFactoryBean) &#123;</span><br><span class="line">						isEagerInit = AccessController.doPrivileged(new PrivilegedAction&lt;Boolean&gt;() &#123;</span><br><span class="line">							@Override</span><br><span class="line">							public Boolean run() &#123;</span><br><span class="line">								return ((SmartFactoryBean&lt;?&gt;) factory).isEagerInit();</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;, getAccessControlContext());</span><br><span class="line">					&#125;</span><br><span class="line">					else &#123;</span><br><span class="line">						isEagerInit = (factory instanceof SmartFactoryBean &amp;&amp;</span><br><span class="line">								((SmartFactoryBean&lt;?&gt;) factory).isEagerInit());</span><br><span class="line">					&#125;</span><br><span class="line">					if (isEagerInit) &#123;</span><br><span class="line">						getBean(beanName);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				else &#123;</span><br><span class="line">					getBean(beanName);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		// Trigger post-initialization callback for all applicable beans...</span><br><span class="line">		for (String beanName : beanNames) &#123;</span><br><span class="line">			Object singletonInstance = getSingleton(beanName);</span><br><span class="line">			if (singletonInstance instanceof SmartInitializingSingleton) &#123;</span><br><span class="line">				final SmartInitializingSingleton smartSingleton = (SmartInitializingSingleton) singletonInstance;</span><br><span class="line">				if (System.getSecurityManager() != null) &#123;</span><br><span class="line">					AccessController.doPrivileged(new PrivilegedAction&lt;Object&gt;() &#123;</span><br><span class="line">						@Override</span><br><span class="line">						public Object run() &#123;</span><br><span class="line">							smartSingleton.afterSingletonsInstantiated();</span><br><span class="line">							return null;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;, getAccessControlContext());</span><br><span class="line">				&#125;</span><br><span class="line">				else &#123;</span><br><span class="line">					smartSingleton.afterSingletonsInstantiated();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里会遍历容器中所有bean的定义信息，如果bean的定义信息满足1.不是抽象的2.是单例3.不是懒加载的，则会进一步判断是否是工厂bean，若不是进而走到getBean —&gt; doGetBean —&gt; getSingleton，getSingleton用来判断singletonObjects中（缓存）是否创建过此对象，创建则返回，未创建则进一步判断earlySingletonObjects早期依赖中是否有此对象，若没有则会从singletonFactories里取出该对象对应的ObjectFactory，利用ObjectFactory的getObject方法去获取该对象实例，那么为什么要这样做呢？这里先给出答案，为了解决循环依赖的问题，至于怎么解决的，请继续看后文剖析。<br>这里分为两种情况，缓存中sharedInstance是否为null，先来分析为null的情况，如果有父类parentBeanFactory且parentBeanFactory中包含该bean的定义信息则交给parentBeanFactory来创建该对象，否则如果typeCheckOnly类型检查传递为false，则会对bean做一个已创建的标记markBeanAsCreated，之后会合并bean的定义信息，如果bean定义的有depends-on属性，则会先创建该属性对应的对象。<br>接下来又到了创建Bean实例的方法：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">            // Create bean instance.</span><br><span class="line">if (mbd.isSingleton()) &#123;</span><br><span class="line">	sharedInstance = getSingleton(beanName, new ObjectFactory&lt;Object&gt;() &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public Object getObject() throws BeansException &#123;</span><br><span class="line">			try &#123;</span><br><span class="line">				return createBean(beanName, mbd, args);</span><br><span class="line">			&#125;</span><br><span class="line">			catch (BeansException ex) &#123;</span><br><span class="line">				// Explicitly remove instance from singleton cache: It might have been put there</span><br><span class="line">				// eagerly by the creation process, to allow for circular reference resolution.</span><br><span class="line">				// Also remove any beans that received a temporary reference to the bean.</span><br><span class="line">				destroySingleton(beanName);</span><br><span class="line">				throw ex;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;);</span><br><span class="line">	bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>创建bean，首先判断bean是否是单例，否则进入原型的创建过程，这里分析单例。<br>进入到getSingleton(String beanName, ObjectFactory&lt;?&gt; singletonFactory)方法，若singletonObjects中未命中此对象，则beforeSingletonCreation做一个标记，singletonsCurrentlyInCreation中存放了bean的名字。<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">   public Object getSingleton(String beanName, ObjectFactory&lt;?&gt; singletonFactory) &#123;</span><br><span class="line">	Assert.notNull(beanName, "'beanName' must not be null");</span><br><span class="line">	synchronized (this.singletonObjects) &#123;</span><br><span class="line">		Object singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">		if (singletonObject == null) &#123;</span><br><span class="line">			if (this.singletonsCurrentlyInDestruction) &#123;</span><br><span class="line">				throw new BeanCreationNotAllowedException(beanName,</span><br><span class="line">						"Singleton bean creation not allowed while the singletons of this factory are in destruction " +</span><br><span class="line">						"(Do not request a bean from a BeanFactory in a destroy method implementation!)");</span><br><span class="line">			&#125;</span><br><span class="line">			if (logger.isDebugEnabled()) &#123;</span><br><span class="line">				logger.debug("Creating shared instance of singleton bean '" + beanName + "'");</span><br><span class="line">			&#125;</span><br><span class="line">			beforeSingletonCreation(beanName);</span><br><span class="line">			boolean newSingleton = false;</span><br><span class="line">			boolean recordSuppressedExceptions = (this.suppressedExceptions == null);</span><br><span class="line">			if (recordSuppressedExceptions) &#123;</span><br><span class="line">				this.suppressedExceptions = new LinkedHashSet&lt;Exception&gt;();</span><br><span class="line">			&#125;</span><br><span class="line">			try &#123;</span><br><span class="line">				singletonObject = singletonFactory.getObject();</span><br><span class="line">				newSingleton = true;</span><br><span class="line">			&#125;</span><br><span class="line">			catch (IllegalStateException ex) &#123;</span><br><span class="line">				// Has the singleton object implicitly appeared in the meantime -&gt;</span><br><span class="line">				// if yes, proceed with it since the exception indicates that state.</span><br><span class="line">				singletonObject = this.singletonObjects.get(beanName);</span><br><span class="line">				if (singletonObject == null) &#123;</span><br><span class="line">					throw ex;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			catch (BeanCreationException ex) &#123;</span><br><span class="line">				if (recordSuppressedExceptions) &#123;</span><br><span class="line">					for (Exception suppressedException : this.suppressedExceptions) &#123;</span><br><span class="line">						ex.addRelatedCause(suppressedException);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				throw ex;</span><br><span class="line">			&#125;</span><br><span class="line">			finally &#123;</span><br><span class="line">				if (recordSuppressedExceptions) &#123;</span><br><span class="line">					this.suppressedExceptions = null;</span><br><span class="line">				&#125;</span><br><span class="line">				afterSingletonCreation(beanName);</span><br><span class="line">			&#125;</span><br><span class="line">			if (newSingleton) &#123;</span><br><span class="line">				addSingleton(beanName, singletonObject);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		return (singletonObject != NULL_OBJECT ? singletonObject : null);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">protected void addSingleton(String beanName, Object singletonObject) &#123;</span><br><span class="line">   	synchronized (this.singletonObjects) &#123;</span><br><span class="line">   		this.singletonObjects.put(beanName, (singletonObject != null ? singletonObject : NULL_OBJECT));</span><br><span class="line">   		this.singletonFactories.remove(beanName);</span><br><span class="line">   		this.earlySingletonObjects.remove(beanName);</span><br><span class="line">   		this.registeredSingletons.add(beanName);</span><br><span class="line">   	&#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>注意addSingleton是将该bean放在singletonObjects中，而newSingleton = true的时机是等到createBean结束。<br>接下来会调用传递的objectFactory的getObject方法，因此走到createBean(beanName, mbd, args)，<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">    protected Object createBean(String beanName, RootBeanDefinition mbd, Object[] args) throws BeanCreationException &#123;</span><br><span class="line">    		if (logger.isDebugEnabled()) &#123;</span><br><span class="line">    			logger.debug("Creating instance of bean '" + beanName + "'");</span><br><span class="line">    		&#125;</span><br><span class="line">    		RootBeanDefinition mbdToUse = mbd;</span><br><span class="line">    </span><br><span class="line">    		// Make sure bean class is actually resolved at this point, and</span><br><span class="line">    		// clone the bean definition in case of a dynamically resolved Class</span><br><span class="line">    		// which cannot be stored in the shared merged bean definition.</span><br><span class="line">    		Class&lt;?&gt; resolvedClass = resolveBeanClass(mbd, beanName);</span><br><span class="line">    		if (resolvedClass != null &amp;&amp; !mbd.hasBeanClass() &amp;&amp; mbd.getBeanClassName() != null) &#123;</span><br><span class="line">    			mbdToUse = new RootBeanDefinition(mbd);</span><br><span class="line">    			mbdToUse.setBeanClass(resolvedClass);</span><br><span class="line">    		&#125;</span><br><span class="line">    </span><br><span class="line">    		// Prepare method overrides.</span><br><span class="line">    		try &#123;</span><br><span class="line">    			mbdToUse.prepareMethodOverrides();</span><br><span class="line">    		&#125;</span><br><span class="line">    		catch (BeanDefinitionValidationException ex) &#123;</span><br><span class="line">    			throw new BeanDefinitionStoreException(mbdToUse.getResourceDescription(),</span><br><span class="line">    					beanName, "Validation of method overrides failed", ex);</span><br><span class="line">    		&#125;</span><br><span class="line">    </span><br><span class="line">    		try &#123;</span><br><span class="line">    			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.</span><br><span class="line">    			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);</span><br><span class="line">    			if (bean != null) &#123;</span><br><span class="line">    				return bean;</span><br><span class="line">    			&#125;</span><br><span class="line">    		&#125;</span><br><span class="line">    		catch (Throwable ex) &#123;</span><br><span class="line">    			throw new BeanCreationException(mbdToUse.getResourceDescription(), beanName,</span><br><span class="line">    					"BeanPostProcessor before instantiation of bean failed", ex);</span><br><span class="line">    		&#125;</span><br><span class="line">    </span><br><span class="line">    		Object beanInstance = doCreateBean(beanName, mbdToUse, args);</span><br><span class="line">    		if (logger.isDebugEnabled()) &#123;</span><br><span class="line">    			logger.debug("Finished creating instance of bean '" + beanName + "'");</span><br><span class="line">    		&#125;</span><br><span class="line">    		return beanInstance;</span><br><span class="line">    &#125;</span><br><span class="line">    ```  </span><br><span class="line">注意这里：</span><br><span class="line">    ```shell</span><br><span class="line">                Object bean = resolveBeforeInstantiation(beanName, mbdToUse);</span><br><span class="line">    			if (bean != null) &#123;</span><br><span class="line">    				return bean;</span><br><span class="line">    			&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在之前注册的beanPostProcessor中如果有InstantiationAwareBeanPostProcessor类型的后置处理器，applyBeanPostProcessorsBeforeInstantiation则会调用其postProcessBeforeInstantiation方法，<br>此方法用来返回一个对象，如果返回的对象不为空，则会调用applyBeanPostProcessorsAfterInitialization，进而调用beanPostProcessor的postProcessAfterInitialization。<br>resolveBeforeInstantiation这个方法整体的作用就是提供一个返回代理对象的机会。如果没有返回代理对象，则会走到doCreateBean(beanName, mbdToUse, args)：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final Object[] args) &#123;</span><br><span class="line">		// Instantiate the bean.</span><br><span class="line">		BeanWrapper instanceWrapper = null;</span><br><span class="line">		if (mbd.isSingleton()) &#123;</span><br><span class="line">			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);</span><br><span class="line">		&#125;</span><br><span class="line">		if (instanceWrapper == null) &#123;</span><br><span class="line">			instanceWrapper = createBeanInstance(beanName, mbd, args);</span><br><span class="line">		&#125;</span><br><span class="line">		final Object bean = (instanceWrapper != null ? instanceWrapper.getWrappedInstance() : null);</span><br><span class="line">		Class&lt;?&gt; beanType = (instanceWrapper != null ? instanceWrapper.getWrappedClass() : null);</span><br><span class="line"></span><br><span class="line">		// Allow post-processors to modify the merged bean definition.</span><br><span class="line">		synchronized (mbd.postProcessingLock) &#123;</span><br><span class="line">			if (!mbd.postProcessed) &#123;</span><br><span class="line">				applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);</span><br><span class="line">				mbd.postProcessed = true;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		// Eagerly cache singletons to be able to resolve circular references</span><br><span class="line">		// even when triggered by lifecycle interfaces like BeanFactoryAware.</span><br><span class="line">		boolean earlySingletonExposure = (mbd.isSingleton() &amp;&amp; this.allowCircularReferences &amp;&amp;</span><br><span class="line">				isSingletonCurrentlyInCreation(beanName));</span><br><span class="line">		if (earlySingletonExposure) &#123;</span><br><span class="line">			if (logger.isDebugEnabled()) &#123;</span><br><span class="line">				logger.debug("Eagerly caching bean '" + beanName +</span><br><span class="line">						"' to allow for resolving potential circular references");</span><br><span class="line">			&#125;</span><br><span class="line">			addSingletonFactory(beanName, new ObjectFactory&lt;Object&gt;() &#123;</span><br><span class="line">				@Override</span><br><span class="line">				public Object getObject() throws BeansException &#123;</span><br><span class="line">					return getEarlyBeanReference(beanName, mbd, bean);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		// Initialize the bean instance.</span><br><span class="line">		Object exposedObject = bean;</span><br><span class="line">		try &#123;</span><br><span class="line">			populateBean(beanName, mbd, instanceWrapper);</span><br><span class="line">			if (exposedObject != null) &#123;</span><br><span class="line">				exposedObject = initializeBean(beanName, exposedObject, mbd);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		catch (Throwable ex) &#123;</span><br><span class="line">			if (ex instanceof BeanCreationException &amp;&amp; beanName.equals(((BeanCreationException) ex).getBeanName())) &#123;</span><br><span class="line">				throw (BeanCreationException) ex;</span><br><span class="line">			&#125;</span><br><span class="line">			else &#123;</span><br><span class="line">				throw new BeanCreationException(mbd.getResourceDescription(), beanName, "Initialization of bean failed", ex);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if (earlySingletonExposure) &#123;</span><br><span class="line">			Object earlySingletonReference = getSingleton(beanName, false);</span><br><span class="line">			if (earlySingletonReference != null) &#123;</span><br><span class="line">				if (exposedObject == bean) &#123;</span><br><span class="line">					exposedObject = earlySingletonReference;</span><br><span class="line">				&#125;</span><br><span class="line">				else if (!this.allowRawInjectionDespiteWrapping &amp;&amp; hasDependentBean(beanName)) &#123;</span><br><span class="line">					String[] dependentBeans = getDependentBeans(beanName);</span><br><span class="line">					Set&lt;String&gt; actualDependentBeans = new LinkedHashSet&lt;String&gt;(dependentBeans.length);</span><br><span class="line">					for (String dependentBean : dependentBeans) &#123;</span><br><span class="line">						if (!removeSingletonIfCreatedForTypeCheckOnly(dependentBean)) &#123;</span><br><span class="line">							actualDependentBeans.add(dependentBean);</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">					if (!actualDependentBeans.isEmpty()) &#123;</span><br><span class="line">						throw new BeanCurrentlyInCreationException(beanName,</span><br><span class="line">								"Bean with name '" + beanName + "' has been injected into other beans [" +</span><br><span class="line">								StringUtils.collectionToCommaDelimitedString(actualDependentBeans) +</span><br><span class="line">								"] in its raw version as part of a circular reference, but has eventually been " +</span><br><span class="line">								"wrapped. This means that said other beans do not use the final version of the " +</span><br><span class="line">								"bean. This is often the result of over-eager type matching - consider using " +</span><br><span class="line">								"'getBeanNamesOfType' with the 'allowEagerInit' flag turned off, for example.");</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		// Register bean as disposable.</span><br><span class="line">		try &#123;</span><br><span class="line">			registerDisposableBeanIfNecessary(beanName, bean, mbd);</span><br><span class="line">		&#125;</span><br><span class="line">		catch (BeanDefinitionValidationException ex) &#123;</span><br><span class="line">			throw new BeanCreationException(mbd.getResourceDescription(), beanName, "Invalid destruction signature", ex);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		return exposedObject;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
+<p>进而走到createBeanInstance，如果该bean定义了factory-method，则会调用factoryMethod方法创建对象，没有则会通过反射调用合适的构造方法创建该bean实例，<br>applyMergedBeanDefinitionPostProcessors会调用MergedBeanDefinitionPostProcessor的postProcessMergedBeanDefinition，这里要注意如果earlySingletonExposure为true，<br>则说明该对象正在创建。spring在创建对象的过程中，在populateBean中若发现有依赖的对象，则会进而创建依赖的对象，那么存在一种情况，A依赖B，B又依赖A。当A实例化完成之后调用populateBean —&gt; 创建依赖的对象B —&gt; B中发现依赖A —&gt; 形成循环依赖。<br>（populateBean最终实际通过反射调用set方法实现属性的注入，可查看applyPropertyValues —&gt; bw.setPropertyValues(BeanWrapper) —&gt; ph.setValue(PropertyHandler)实际上是BeanWrapperImpl.setValue，有兴趣可以跟一下代码）</p>
+<h2 id="spring如何解决循环依赖问题"><a href="#spring如何解决循环依赖问题" class="headerlink" title="spring如何解决循环依赖问题"></a>spring如何解决循环依赖问题</h2><p>按上面的例子，当A在创建的时候，会通过addSingletonFactory将自己放在beanFactory的singletonFactories三级缓存当中，当B在getBean创建的时候，走到populateBean，需要去getBean(A)，首先从getSingleton(A)，尝试从一级缓存中获取A，<br>如果A已经创建完毕通过addSingleton加入到singletonObjects中，那么直接能获取到，如果A还未创建完毕，但A已经通过addSingletonFactory方法存放在了三级缓存中，那么当B获取A时，就可以通过三级缓存中获取到A，获取之后将A放入二级缓存，并且将三级缓存singletonFactories中移除，以后再有循环依赖，并且A还未放入一级缓存，可以从二级缓存中获取，这样A、B都可以完成初始化。<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">      if (earlySingletonExposure) &#123;</span><br><span class="line">	if (logger.isDebugEnabled()) &#123;</span><br><span class="line">		logger.debug("Eagerly caching bean '" + beanName +</span><br><span class="line">				"' to allow for resolving potential circular references");</span><br><span class="line">	&#125;</span><br><span class="line">	addSingletonFactory(beanName, new ObjectFactory&lt;Object&gt;() &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public Object getObject() throws BeansException &#123;</span><br><span class="line">			return getEarlyBeanReference(beanName, mbd, bean);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;</span><br><span class="line">protected void addSingletonFactory(String beanName, ObjectFactory&lt;?&gt; singletonFactory) &#123;</span><br><span class="line">      		Assert.notNull(singletonFactory, "Singleton factory must not be null");</span><br><span class="line">      		synchronized (this.singletonObjects) &#123;</span><br><span class="line">      			if (!this.singletonObjects.containsKey(beanName)) &#123;</span><br><span class="line">      				this.singletonFactories.put(beanName, singletonFactory);</span><br><span class="line">      				this.earlySingletonObjects.remove(beanName);</span><br><span class="line">      				this.registeredSingletons.add(beanName);</span><br><span class="line">      			&#125;</span><br><span class="line">      		&#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></p>
+<p>需要注意的是，spring是通过setter方式解决循环依赖问题，而构造方法的循环依赖无法解决。</p>
+<h2 id="继续刚才的话题"><a href="#继续刚才的话题" class="headerlink" title="继续刚才的话题"></a>继续刚才的话题</h2><p>populateBean属性注入完成之后，进入到initializeBean，走一下bean的生命周期，其中有后置处理器的处理postProcessBeforeInitialization，之后执行init-method，最后applyBeanPostProcessorsAfterInitialization，可以返回一个包装的bean。<br>最后注册一下registerDisposableBeanIfNecessary    ，销毁方法。</p>
+<h2 id="finishRefresh"><a href="#finishRefresh" class="headerlink" title="finishRefresh()"></a>finishRefresh()</h2><p>完成容器事件，并派发事件。</p>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><p>初始化所有单实例对象之后还有一个回调钩子，SmartInitializingSingleton的afterSingletonsInstantiated<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Object sharedInstance = getSingleton(beanName);</span><br><span class="line">if (sharedInstance != null &amp;&amp; args == null) &#123;</span><br><span class="line">	if (logger.isDebugEnabled()) &#123;</span><br><span class="line">		if (isSingletonCurrentlyInCreation(beanName)) &#123;</span><br><span class="line">			logger.debug("Returning eagerly cached instance of singleton bean '" + beanName +</span><br><span class="line">					"' that is not fully initialized yet - a consequence of a circular reference");</span><br><span class="line">		&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			logger.debug("Returning cached instance of singleton bean '" + beanName + "'");</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>sharedInstance缓存中如果不为空且args为null，则会尝试getObjectForBeanInstance从FactoryBean工厂bean中getObject，返回工厂创建的对象。</p>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>对于spring加载bean过程的学习暂时写在这里，由于技术能力有限，欢迎指正交流。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/article1/" data-toggle="tooltip" data-placement="top" title="[java基础] 类加载机制">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#话前"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">话前</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#正文"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">正文</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#核心类"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">核心类</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#创建Bean过程"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">创建Bean过程</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#prepareRefresh"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">prepareRefresh()</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#obtainFreshBeanFactory"><span class="toc-nav-number">2.2.2.</span> <span class="toc-nav-text">obtainFreshBeanFactory()</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#prepareBeanFactory-beanFactory"><span class="toc-nav-number">2.2.3.</span> <span class="toc-nav-text">prepareBeanFactory(beanFactory)</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#postProcessBeanFactory-beanFactory"><span class="toc-nav-number">2.2.4.</span> <span class="toc-nav-text">postProcessBeanFactory(beanFactory)</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#invokeBeanFactoryPostProcessors-beanFactory"><span class="toc-nav-number">2.2.5.</span> <span class="toc-nav-text">invokeBeanFactoryPostProcessors(beanFactory)</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#registerBeanPostProcessors-beanFactory"><span class="toc-nav-number">2.2.6.</span> <span class="toc-nav-text">registerBeanPostProcessors(beanFactory)</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#initMessageSource"><span class="toc-nav-number">2.2.7.</span> <span class="toc-nav-text">initMessageSource()</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#onRefresh"><span class="toc-nav-number">2.2.8.</span> <span class="toc-nav-text">onRefresh()</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#registerListeners"><span class="toc-nav-number">2.2.9.</span> <span class="toc-nav-text">registerListeners()</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#finishBeanFactoryInitialization-beanFactory"><span class="toc-nav-number">2.2.10.</span> <span class="toc-nav-text">finishBeanFactoryInitialization(beanFactory)</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#spring如何解决循环依赖问题"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">spring如何解决循环依赖问题</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#继续刚才的话题"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">继续刚才的话题</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#finishRefresh"><span class="toc-nav-number">2.5.</span> <span class="toc-nav-text">finishRefresh()</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#补充"><span class="toc-nav-number">2.6.</span> <span class="toc-nav-text">补充</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#写在最后"><span class="toc-nav-number">2.7.</span> <span class="toc-nav-text">写在最后</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#spring" title="spring">spring</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2018 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
