@@ -147,14 +147,14 @@
 
                         
                         <li>
-                            <a href="/archive/">Archives</a>
+                            <a href="/tags/">Tags</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/tags/">Tags</a>
+                            <a href="/archive/">Archives</a>
                         </li>
                         
                     
@@ -212,123 +212,189 @@
 
                 <h1 id="IOC-DI的解释"><a href="#IOC-DI的解释" class="headerlink" title="IOC/DI的解释"></a>IOC/DI的解释</h1><p>所谓控制反转/依赖注入，就是把对象的创建交给spring来管理，不需要程序员显示new对象，减少对象之间的耦合，达到一个高内聚、低耦合的目的。</p>
 <h1 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h1><p>spring提供基于xml的依赖注入和基于注解的依赖注入。基于xml的依赖注入可以通过setter/构造器注入，基于注解的注入方式主要通过@Autowired，@Resource，@Inject（需要导入依赖）。</p>
-<h2 id="Autowired"><a href="#Autowired" class="headerlink" title="@Autowired"></a>@Autowired</h2><p>其实@Autowired注入实现很简单，@Autowired是基于beanPostProcessor后置处理器来完成的，具体的实现是AutowiredAnnotationBeanPostProcessor。<br>这个后置处理器是SmartInstantiationAwareBeanPostProcessor的子类。<br>主要关心postProcessPropertyValues方法。<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">   @Override</span><br><span class="line">public PropertyValues postProcessPropertyValues(</span><br><span class="line">		PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException &#123;</span><br><span class="line">    </span><br><span class="line">	InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);</span><br><span class="line">	try &#123;</span><br><span class="line">		metadata.inject(bean, beanName, pvs);</span><br><span class="line">	&#125;</span><br><span class="line">	catch (BeanCreationException ex) &#123;</span><br><span class="line">		throw ex;</span><br><span class="line">	&#125;</span><br><span class="line">	catch (Throwable ex) &#123;</span><br><span class="line">		throw new BeanCreationException(beanName, "Injection of autowired dependencies failed", ex);</span><br><span class="line">	&#125;</span><br><span class="line">	return pvs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里进入到inject方法：<br>        <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">      @Override</span><br><span class="line">protected void inject(Object bean, String beanName, PropertyValues pvs) throws Throwable &#123;</span><br><span class="line">	Field field = (Field) this.member;</span><br><span class="line">	Object value;</span><br><span class="line">	if (this.cached) &#123;</span><br><span class="line">		value = resolvedCachedArgument(beanName, this.cachedFieldValue);</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		DependencyDescriptor desc = new DependencyDescriptor(field, this.required);</span><br><span class="line">		desc.setContainingClass(bean.getClass());</span><br><span class="line">		Set&lt;String&gt; autowiredBeanNames = new LinkedHashSet&lt;String&gt;(1);</span><br><span class="line">		TypeConverter typeConverter = beanFactory.getTypeConverter();</span><br><span class="line">		try &#123;</span><br><span class="line">			value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);</span><br><span class="line">		&#125;</span><br><span class="line">		catch (BeansException ex) &#123;</span><br><span class="line">			throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(field), ex);</span><br><span class="line">		&#125;</span><br><span class="line">		synchronized (this) &#123;</span><br><span class="line">			if (!this.cached) &#123;</span><br><span class="line">				if (value != null || this.required) &#123;</span><br><span class="line">					this.cachedFieldValue = desc;</span><br><span class="line">					registerDependentBeans(beanName, autowiredBeanNames);</span><br><span class="line">					if (autowiredBeanNames.size() == 1) &#123;</span><br><span class="line">						String autowiredBeanName = autowiredBeanNames.iterator().next();</span><br><span class="line">						if (beanFactory.containsBean(autowiredBeanName)) &#123;</span><br><span class="line">							if (beanFactory.isTypeMatch(autowiredBeanName, field.getType())) &#123;</span><br><span class="line">								this.cachedFieldValue = new ShortcutDependencyDescriptor(</span><br><span class="line">										desc, autowiredBeanName, field.getType());</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				else &#123;</span><br><span class="line">					this.cachedFieldValue = null;</span><br><span class="line">				&#125;</span><br><span class="line">				this.cached = true;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	if (value != null) &#123;</span><br><span class="line">		ReflectionUtils.makeAccessible(field);</span><br><span class="line">		field.set(bean, value);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Autowired"><a href="#Autowired" class="headerlink" title="@Autowired"></a>@Autowired</h2><p>其实@Autowired注入实现很简单，@Autowired是基于beanPostProcessor后置处理器来完成的，具体的实现是AutowiredAnnotationBeanPostProcessor。<br>这个后置处理器是SmartInstantiationAwareBeanPostProcessor的子类。<br>主要关心postProcessPropertyValues方法。<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">  </span><br><span class="line">public PropertyValues postProcessPropertyValues(</span><br><span class="line">		PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException &#123;</span><br><span class="line">    </span><br><span class="line">	InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);</span><br><span class="line">	try &#123;</span><br><span class="line">		metadata.inject(bean, beanName, pvs);</span><br><span class="line">	&#125;</span><br><span class="line">	catch (BeanCreationException ex) &#123;</span><br><span class="line">		throw ex;</span><br><span class="line">	&#125;</span><br><span class="line">	catch (Throwable ex) &#123;</span><br><span class="line">		throw new BeanCreationException(beanName, "Injection of autowired dependencies failed", ex);</span><br><span class="line">	&#125;</span><br><span class="line">	return pvs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里进入到inject方法：<br>        <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">  </span><br><span class="line">protected void inject(Object bean, String beanName, PropertyValues pvs) throws Throwable &#123;</span><br><span class="line">	Field field = (Field) this.member;</span><br><span class="line">	Object value;</span><br><span class="line">	if (this.cached) &#123;</span><br><span class="line">		value = resolvedCachedArgument(beanName, this.cachedFieldValue);</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		DependencyDescriptor desc = new DependencyDescriptor(field, this.required);</span><br><span class="line">		desc.setContainingClass(bean.getClass());</span><br><span class="line">		Set&lt;String&gt; autowiredBeanNames = new LinkedHashSet&lt;String&gt;(1);</span><br><span class="line">		TypeConverter typeConverter = beanFactory.getTypeConverter();</span><br><span class="line">		try &#123;</span><br><span class="line">			value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);</span><br><span class="line">		&#125;</span><br><span class="line">		catch (BeansException ex) &#123;</span><br><span class="line">			throw new UnsatisfiedDependencyException(null, beanName, new InjectionPoint(field), ex);</span><br><span class="line">		&#125;</span><br><span class="line">		synchronized (this) &#123;</span><br><span class="line">			if (!this.cached) &#123;</span><br><span class="line">				if (value != null || this.required) &#123;</span><br><span class="line">					this.cachedFieldValue = desc;</span><br><span class="line">					registerDependentBeans(beanName, autowiredBeanNames);</span><br><span class="line">					if (autowiredBeanNames.size() == 1) &#123;</span><br><span class="line">						String autowiredBeanName = autowiredBeanNames.iterator().next();</span><br><span class="line">						if (beanFactory.containsBean(autowiredBeanName)) &#123;</span><br><span class="line">							if (beanFactory.isTypeMatch(autowiredBeanName, field.getType())) &#123;</span><br><span class="line">								this.cachedFieldValue = new ShortcutDependencyDescriptor(</span><br><span class="line">										desc, autowiredBeanName, field.getType());</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				else &#123;</span><br><span class="line">					this.cachedFieldValue = null;</span><br><span class="line">				&#125;</span><br><span class="line">				this.cached = true;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	if (value != null) &#123;</span><br><span class="line">		ReflectionUtils.makeAccessible(field);</span><br><span class="line">		field.set(bean, value);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>这里beanFactory.resolveDependency从容器中取得依赖的实例，最后通过反射实现注入。<br>需要注意的是通过反射调用是不需要在目标方法上提供set方法的。 </p>
 <h3 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h3><p>写到这里抛出一个疑问，AutowiredAnnotationBeanPostProcessor是怎么被注册到容器里的呢。<br>详见AnnotationConfigApplicationContext() -&gt; AnnotatedBeanDefinitionReader -&gt; AnnotationConfigUtils.registerAnnotationConfigProcessors。<br>这个方法中注册了spring自带的如Autowired，Required，Common后置处理器的定义信息，在之后registerBeanPostProcessors中将会实例化这些后置处理器。</p>
-<h2 id="Resource"><a href="#Resource" class="headerlink" title="@Resource"></a>@Resource</h2><p>@Resource注解的处理其实和@Autowired大同小异，具体可参见CommonAnnotationBeanPostProcessor，该后置处理器继承InitDestroyAnnotationBeanPostProcessor，InitDestroyAnnotationBeanPostProcessor实现了DestructionAwareBeanPostProcessor，MergedBeanDefinitionPostProcessor；同时也实现了InstantiationAwareBeanPostProcessor。<br>可参见该后置处理器的：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">    	@Override</span><br><span class="line">    	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) &#123;</span><br><span class="line">    		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);</span><br><span class="line">    		if (beanType != null) &#123;</span><br><span class="line">    			InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);</span><br><span class="line">    			metadata.checkConfigMembers(beanDefinition);</span><br><span class="line">    		&#125;</span><br><span class="line">    	&#125;</span><br><span class="line">    	</span><br><span class="line">        @Override</span><br><span class="line">    	public PropertyValues postProcessPropertyValues(</span><br><span class="line">    			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException &#123;</span><br><span class="line">    </span><br><span class="line">    		InjectionMetadata metadata = findResourceMetadata(beanName, bean.getClass(), pvs);</span><br><span class="line">    		try &#123;</span><br><span class="line">    			metadata.inject(bean, beanName, pvs);</span><br><span class="line">    		&#125;</span><br><span class="line">    		catch (Throwable ex) &#123;</span><br><span class="line">    			throw new BeanCreationException(beanName, "Injection of resource dependencies failed", ex);</span><br><span class="line">    		&#125;</span><br><span class="line">    		return pvs;</span><br><span class="line">    	&#125;</span><br><span class="line">	</span><br><span class="line">    ``` </span><br><span class="line">    </span><br><span class="line">进入super.postProcessMergedBeanDefinition中，</span><br><span class="line">    ```shell</span><br><span class="line">    	@Override</span><br><span class="line">    	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) &#123;</span><br><span class="line">    		if (beanType != null) &#123;</span><br><span class="line">    			LifecycleMetadata metadata = findLifecycleMetadata(beanType);</span><br><span class="line">    			metadata.checkConfigMembers(beanDefinition);</span><br><span class="line">    		&#125;</span><br><span class="line">    	&#125;</span><br><span class="line">    	</span><br><span class="line">        private LifecycleMetadata findLifecycleMetadata(Class&lt;?&gt; clazz) &#123;</span><br><span class="line">    		if (this.lifecycleMetadataCache == null) &#123;</span><br><span class="line">    			// Happens after deserialization, during destruction...</span><br><span class="line">    			return buildLifecycleMetadata(clazz);</span><br><span class="line">    		&#125;</span><br><span class="line">    		// Quick check on the concurrent map first, with minimal locking.</span><br><span class="line">    		LifecycleMetadata metadata = this.lifecycleMetadataCache.get(clazz);</span><br><span class="line">    		if (metadata == null) &#123;</span><br><span class="line">    			synchronized (this.lifecycleMetadataCache) &#123;</span><br><span class="line">    				metadata = this.lifecycleMetadataCache.get(clazz);</span><br><span class="line">    				if (metadata == null) &#123;</span><br><span class="line">    					metadata = buildLifecycleMetadata(clazz);</span><br><span class="line">    					this.lifecycleMetadataCache.put(clazz, metadata);</span><br><span class="line">    				&#125;</span><br><span class="line">    				return metadata;</span><br><span class="line">    			&#125;</span><br><span class="line">    		&#125;</span><br><span class="line">    		return metadata;</span><br><span class="line">    	&#125;</span><br><span class="line">    	</span><br><span class="line">        private LifecycleMetadata buildLifecycleMetadata(final Class&lt;?&gt; clazz) &#123;</span><br><span class="line">    		final boolean debug = logger.isDebugEnabled();</span><br><span class="line">    		LinkedList&lt;LifecycleElement&gt; initMethods = new LinkedList&lt;LifecycleElement&gt;();</span><br><span class="line">    		LinkedList&lt;LifecycleElement&gt; destroyMethods = new LinkedList&lt;LifecycleElement&gt;();</span><br><span class="line">    		Class&lt;?&gt; targetClass = clazz;</span><br><span class="line">    </span><br><span class="line">    		do &#123;</span><br><span class="line">    			final LinkedList&lt;LifecycleElement&gt; currInitMethods = new LinkedList&lt;LifecycleElement&gt;();</span><br><span class="line">    			final LinkedList&lt;LifecycleElement&gt; currDestroyMethods = new LinkedList&lt;LifecycleElement&gt;();</span><br><span class="line">    </span><br><span class="line">    			ReflectionUtils.doWithLocalMethods(targetClass, new ReflectionUtils.MethodCallback() &#123;</span><br><span class="line">    				@Override</span><br><span class="line">    				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException &#123;</span><br><span class="line">    					if (initAnnotationType != null) &#123;</span><br><span class="line">    						if (method.getAnnotation(initAnnotationType) != null) &#123;</span><br><span class="line">    							LifecycleElement element = new LifecycleElement(method);</span><br><span class="line">    							currInitMethods.add(element);</span><br><span class="line">    							if (debug) &#123;</span><br><span class="line">    								logger.debug("Found init method on class [" + clazz.getName() + "]: " + method);</span><br><span class="line">    							&#125;</span><br><span class="line">    						&#125;</span><br><span class="line">    					&#125;</span><br><span class="line">    					if (destroyAnnotationType != null) &#123;</span><br><span class="line">    						if (method.getAnnotation(destroyAnnotationType) != null) &#123;</span><br><span class="line">    							currDestroyMethods.add(new LifecycleElement(method));</span><br><span class="line">    							if (debug) &#123;</span><br><span class="line">    								logger.debug("Found destroy method on class [" + clazz.getName() + "]: " + method);</span><br><span class="line">    							&#125;</span><br><span class="line">    						&#125;</span><br><span class="line">    					&#125;</span><br><span class="line">    				&#125;</span><br><span class="line">    			&#125;);</span><br><span class="line">    </span><br><span class="line">    			initMethods.addAll(0, currInitMethods);</span><br><span class="line">    			destroyMethods.addAll(currDestroyMethods);</span><br><span class="line">    			targetClass = targetClass.getSuperclass();</span><br><span class="line">    		&#125;</span><br><span class="line">    		while (targetClass != null &amp;&amp; targetClass != Object.class);</span><br><span class="line">    </span><br><span class="line">    		return new LifecycleMetadata(clazz, initMethods, destroyMethods);</span><br><span class="line">    	&#125;</span><br></pre></td></tr></table></figure></p>
-<p>buildLifecycleMetadata中添加了该bean的初始化方法和销毁方法（@PostConstruct和@PreDestroy），进入到findResourceMetadata -&gt; buildResourceMetadata:</p>
-<pre><code>```shell
-    private InjectionMetadata buildResourceMetadata(final Class&lt;?&gt; clazz) {
-        LinkedList&lt;InjectionMetadata.InjectedElement&gt; elements = new LinkedList&lt;InjectionMetadata.InjectedElement&gt;();
-        Class&lt;?&gt; targetClass = clazz;
-
-        do {
-            final LinkedList&lt;InjectionMetadata.InjectedElement&gt; currElements =
-                    new LinkedList&lt;InjectionMetadata.InjectedElement&gt;();
-
-            ReflectionUtils.doWithLocalFields(targetClass, new ReflectionUtils.FieldCallback() {
-                @Override
-                public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-                    if (webServiceRefClass != null &amp;&amp; field.isAnnotationPresent(webServiceRefClass)) {
-                        if (Modifier.isStatic(field.getModifiers())) {
-                            throw new IllegalStateException(&quot;@WebServiceRef annotation is not supported on static fields&quot;);
-                        }
-                        currElements.add(new WebServiceRefElement(field, field, null));
-                    }
-                    else if (ejbRefClass != null &amp;&amp; field.isAnnotationPresent(ejbRefClass)) {
-                        if (Modifier.isStatic(field.getModifiers())) {
-                            throw new IllegalStateException(&quot;@EJB annotation is not supported on static fields&quot;);
-                        }
-                        currElements.add(new EjbRefElement(field, field, null));
-                    }
-                    else if (field.isAnnotationPresent(Resource.class)) {
-                        if (Modifier.isStatic(field.getModifiers())) {
-                            throw new IllegalStateException(&quot;@Resource annotation is not supported on static fields&quot;);
-                        }
-                        if (!ignoredResourceTypes.contains(field.getType().getName())) {
-                            currElements.add(new ResourceElement(field, field, null));
-                        }
-                    }
-                }
-            });
-
-            ReflectionUtils.doWithLocalMethods(targetClass, new ReflectionUtils.MethodCallback() {
-                @Override
-                public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-                    Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
-                    if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
-                        return;
-                    }
-                    if (method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
-                        if (webServiceRefClass != null &amp;&amp; bridgedMethod.isAnnotationPresent(webServiceRefClass)) {
-                            if (Modifier.isStatic(method.getModifiers())) {
-                                throw new IllegalStateException(&quot;@WebServiceRef annotation is not supported on static methods&quot;);
-                            }
-                            if (method.getParameterTypes().length != 1) {
-                                throw new IllegalStateException(&quot;@WebServiceRef annotation requires a single-arg method: &quot; + method);
-                            }
-                            PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
-                            currElements.add(new WebServiceRefElement(method, bridgedMethod, pd));
-                        }
-                        else if (ejbRefClass != null &amp;&amp; bridgedMethod.isAnnotationPresent(ejbRefClass)) {
-                            if (Modifier.isStatic(method.getModifiers())) {
-                                throw new IllegalStateException(&quot;@EJB annotation is not supported on static methods&quot;);
-                            }
-                            if (method.getParameterTypes().length != 1) {
-                                throw new IllegalStateException(&quot;@EJB annotation requires a single-arg method: &quot; + method);
-                            }
-                            PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
-                            currElements.add(new EjbRefElement(method, bridgedMethod, pd));
-                        }
-                        else if (bridgedMethod.isAnnotationPresent(Resource.class)) {
-                            if (Modifier.isStatic(method.getModifiers())) {
-                                throw new IllegalStateException(&quot;@Resource annotation is not supported on static methods&quot;);
-                            }
-                            Class&lt;?&gt;[] paramTypes = method.getParameterTypes();
-                            if (paramTypes.length != 1) {
-                                throw new IllegalStateException(&quot;@Resource annotation requires a single-arg method: &quot; + method);
-                            }
-                            if (!ignoredResourceTypes.contains(paramTypes[0].getName())) {
-                                PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
-                                currElements.add(new ResourceElement(method, bridgedMethod, pd));
-                            }
-                        }
-                    }
-                }
-            });
-
-            elements.addAll(0, currElements);
-            targetClass = targetClass.getSuperclass();
-        }
-        while (targetClass != null &amp;&amp; targetClass != Object.class);
-
-        return new InjectionMetadata(clazz, elements);
+<h2 id="Resource"><a href="#Resource" class="headerlink" title="@Resource"></a>@Resource</h2><p>@Resource注解的处理其实和@Autowired大同小异，具体可参见CommonAnnotationBeanPostProcessor，该后置处理器继承InitDestroyAnnotationBeanPostProcessor，InitDestroyAnnotationBeanPostProcessor实现了DestructionAwareBeanPostProcessor，MergedBeanDefinitionPostProcessor；同时也实现了InstantiationAwareBeanPostProcessor。<br>可参见该后置处理器的：<br>        <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) &#123;</span><br><span class="line">	super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);</span><br><span class="line">	if (beanType != null) &#123;</span><br><span class="line">		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);</span><br><span class="line">		metadata.checkConfigMembers(beanDefinition);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public PropertyValues postProcessPropertyValues(</span><br><span class="line">		PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException &#123;</span><br><span class="line">    </span><br><span class="line">	InjectionMetadata metadata = findResourceMetadata(beanName, bean.getClass(), pvs);</span><br><span class="line">	try &#123;</span><br><span class="line">		metadata.inject(bean, beanName, pvs);</span><br><span class="line">	&#125;</span><br><span class="line">	catch (Throwable ex) &#123;</span><br><span class="line">		throw new BeanCreationException(beanName, "Injection of resource dependencies failed", ex);</span><br><span class="line">	&#125;</span><br><span class="line">	return pvs;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>进入super.postProcessMergedBeanDefinition中：</p>
+<pre><code>@Override
+public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class&lt;?&gt; beanType, String beanName) {
+    if (beanType != null) {
+        LifecycleMetadata metadata = findLifecycleMetadata(beanType);
+        metadata.checkConfigMembers(beanDefinition);
     }
-``` 
-</code></pre><p>该方法将@Resource注解标注的方法或者类进行支持，添加到currElements中。<br>在此后的postProcessPropertyValues，进入metadata.inject，实际还是利用反射实现属性或者方法参数的注入：</p>
-<pre><code>```shell
-        protected void inject(Object target, String requestingBeanName, PropertyValues pvs) throws Throwable {
-            if (this.isField) {
-                Field field = (Field) this.member;
-                ReflectionUtils.makeAccessible(field);
-                field.set(target, getResourceToInject(target, requestingBeanName));
+}
+
+private LifecycleMetadata findLifecycleMetadata(Class&lt;?&gt; clazz) {
+    if (this.lifecycleMetadataCache == null) {
+        // Happens after deserialization, during destruction...
+        return buildLifecycleMetadata(clazz);
+    }
+    // Quick check on the concurrent map first, with minimal locking.
+    LifecycleMetadata metadata = this.lifecycleMetadataCache.get(clazz);
+    if (metadata == null) {
+        synchronized (this.lifecycleMetadataCache) {
+            metadata = this.lifecycleMetadataCache.get(clazz);
+            if (metadata == null) {
+                metadata = buildLifecycleMetadata(clazz);
+                this.lifecycleMetadataCache.put(clazz, metadata);
             }
-            else {
-                if (checkPropertySkipping(pvs)) {
+            return metadata;
+        }
+    }
+    return metadata;
+}
+
+private LifecycleMetadata buildLifecycleMetadata(final Class&lt;?&gt; clazz) {
+    final boolean debug = logger.isDebugEnabled();
+    LinkedList&lt;LifecycleElement&gt; initMethods = new LinkedList&lt;LifecycleElement&gt;();
+    LinkedList&lt;LifecycleElement&gt; destroyMethods = new LinkedList&lt;LifecycleElement&gt;();
+    Class&lt;?&gt; targetClass = clazz;
+
+    do {
+        final LinkedList&lt;LifecycleElement&gt; currInitMethods = new LinkedList&lt;LifecycleElement&gt;();
+        final LinkedList&lt;LifecycleElement&gt; currDestroyMethods = new LinkedList&lt;LifecycleElement&gt;();
+
+        ReflectionUtils.doWithLocalMethods(targetClass, new ReflectionUtils.MethodCallback() {
+            @Override
+            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                if (initAnnotationType != null) {
+                    if (method.getAnnotation(initAnnotationType) != null) {
+                        LifecycleElement element = new LifecycleElement(method);
+                        currInitMethods.add(element);
+                        if (debug) {
+                            logger.debug(&quot;Found init method on class [&quot; + clazz.getName() + &quot;]: &quot; + method);
+                        }
+                    }
+                }
+                if (destroyAnnotationType != null) {
+                    if (method.getAnnotation(destroyAnnotationType) != null) {
+                        currDestroyMethods.add(new LifecycleElement(method));
+                        if (debug) {
+                            logger.debug(&quot;Found destroy method on class [&quot; + clazz.getName() + &quot;]: &quot; + method);
+                        }
+                    }
+                }
+            }
+        });
+
+        initMethods.addAll(0, currInitMethods);
+        destroyMethods.addAll(currDestroyMethods);
+        targetClass = targetClass.getSuperclass();
+    }
+    while (targetClass != null &amp;&amp; targetClass != Object.class);
+
+    return new LifecycleMetadata(clazz, initMethods, destroyMethods);
+}        
+</code></pre><p>buildLifecycleMetadata中添加了该bean的初始化方法和销毁方法（@PostConstruct和@PreDestroy），进入到findResourceMetadata -&gt; buildResourceMetadata:</p>
+<pre><code>private InjectionMetadata buildResourceMetadata(final Class&lt;?&gt; clazz) {
+    LinkedList&lt;InjectionMetadata.InjectedElement&gt; elements = new LinkedList&lt;InjectionMetadata.InjectedElement&gt;();
+    Class&lt;?&gt; targetClass = clazz;
+
+    do {
+        final LinkedList&lt;InjectionMetadata.InjectedElement&gt; currElements =
+                new LinkedList&lt;InjectionMetadata.InjectedElement&gt;();
+
+        ReflectionUtils.doWithLocalFields(targetClass, new ReflectionUtils.FieldCallback() {
+            @Override
+            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+                if (webServiceRefClass != null &amp;&amp; field.isAnnotationPresent(webServiceRefClass)) {
+                    if (Modifier.isStatic(field.getModifiers())) {
+                        throw new IllegalStateException(&quot;@WebServiceRef annotation is not supported on static fields&quot;);
+                    }
+                    currElements.add(new WebServiceRefElement(field, field, null));
+                }
+                else if (ejbRefClass != null &amp;&amp; field.isAnnotationPresent(ejbRefClass)) {
+                    if (Modifier.isStatic(field.getModifiers())) {
+                        throw new IllegalStateException(&quot;@EJB annotation is not supported on static fields&quot;);
+                    }
+                    currElements.add(new EjbRefElement(field, field, null));
+                }
+                else if (field.isAnnotationPresent(Resource.class)) {
+                    if (Modifier.isStatic(field.getModifiers())) {
+                        throw new IllegalStateException(&quot;@Resource annotation is not supported on static fields&quot;);
+                    }
+                    if (!ignoredResourceTypes.contains(field.getType().getName())) {
+                        currElements.add(new ResourceElement(field, field, null));
+                    }
+                }
+            }
+        });
+
+        ReflectionUtils.doWithLocalMethods(targetClass, new ReflectionUtils.MethodCallback() {
+            @Override
+            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
+                if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {
                     return;
                 }
-                try {
-                    Method method = (Method) this.member;
-                    ReflectionUtils.makeAccessible(method);
-                    method.invoke(target, getResourceToInject(target, requestingBeanName));
-                }
-                catch (InvocationTargetException ex) {
-                    throw ex.getTargetException();
+                if (method.equals(ClassUtils.getMostSpecificMethod(method, clazz))) {
+                    if (webServiceRefClass != null &amp;&amp; bridgedMethod.isAnnotationPresent(webServiceRefClass)) {
+                        if (Modifier.isStatic(method.getModifiers())) {
+                            throw new IllegalStateException(&quot;@WebServiceRef annotation is not supported on static methods&quot;);
+                        }
+                        if (method.getParameterTypes().length != 1) {
+                            throw new IllegalStateException(&quot;@WebServiceRef annotation requires a single-arg method: &quot; + method);
+                        }
+                        PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+                        currElements.add(new WebServiceRefElement(method, bridgedMethod, pd));
+                    }
+                    else if (ejbRefClass != null &amp;&amp; bridgedMethod.isAnnotationPresent(ejbRefClass)) {
+                        if (Modifier.isStatic(method.getModifiers())) {
+                            throw new IllegalStateException(&quot;@EJB annotation is not supported on static methods&quot;);
+                        }
+                        if (method.getParameterTypes().length != 1) {
+                            throw new IllegalStateException(&quot;@EJB annotation requires a single-arg method: &quot; + method);
+                        }
+                        PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+                        currElements.add(new EjbRefElement(method, bridgedMethod, pd));
+                    }
+                    else if (bridgedMethod.isAnnotationPresent(Resource.class)) {
+                        if (Modifier.isStatic(method.getModifiers())) {
+                            throw new IllegalStateException(&quot;@Resource annotation is not supported on static methods&quot;);
+                        }
+                        Class&lt;?&gt;[] paramTypes = method.getParameterTypes();
+                        if (paramTypes.length != 1) {
+                            throw new IllegalStateException(&quot;@Resource annotation requires a single-arg method: &quot; + method);
+                        }
+                        if (!ignoredResourceTypes.contains(paramTypes[0].getName())) {
+                            PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, clazz);
+                            currElements.add(new ResourceElement(method, bridgedMethod, pd));
+                        }
+                    }
                 }
             }
+        });
+
+        elements.addAll(0, currElements);
+        targetClass = targetClass.getSuperclass();
+    }
+    while (targetClass != null &amp;&amp; targetClass != Object.class);
+
+    return new InjectionMetadata(clazz, elements);
+}
+</code></pre><p>该方法将@Resource注解标注的方法或者类进行支持，添加到currElements中。<br>在此后的postProcessPropertyValues，进入metadata.inject，实际还是利用反射实现属性或者方法参数的注入：</p>
+<pre><code>protected void inject(Object target, String requestingBeanName, PropertyValues pvs) throws Throwable {
+    if (this.isField) {
+        Field field = (Field) this.member;
+        ReflectionUtils.makeAccessible(field);
+        field.set(target, getResourceToInject(target, requestingBeanName));
+    }
+    else {
+        if (checkPropertySkipping(pvs)) {
+            return;
         }
-```   
+        try {
+            Method method = (Method) this.member;
+            ReflectionUtils.makeAccessible(method);
+            method.invoke(target, getResourceToInject(target, requestingBeanName));
+        }
+        catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+    }
+}   
 </code></pre><p>这里要注意的是，CommonAnnotationBeanPostProcessor不仅支持对@Resouce注解的处理，它还是对所有bean生命周期处理的类。<br>具体处理可参考父类InitDestroyAnnotationBeanPostProcessor的postProcessBeforeInitialization和postProcessBeforeDestruction。</p>
 <h1 id="提出疑问"><a href="#提出疑问" class="headerlink" title="提出疑问"></a>提出疑问</h1><p>关于@Component，@Service，@Repository，@Import，@Bean等注解spring是如何处理的呢？<br>详见refresh -&gt; postProcessBeanFactory -&gt; processConfigBeanDefinitions -&gt; parser.parse(candidates) -&gt; parse(bd.getBeanClassName(), holder.getBeanName()) -&gt; processConfigurationClass -&gt; doProcessConfigurationClass<br>(componentScanParser.parse -&gt; scanner.doScan)                </p>
 
