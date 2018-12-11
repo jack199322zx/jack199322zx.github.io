@@ -132,13 +132,6 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
                             <a href="/archive/">Archives</a>
                         </li>
                         
@@ -147,6 +140,13 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -206,6 +206,34 @@
             
                 <!-- Main Content -->
 
+
+<div class="post-preview">
+
+    <a href="/article/article6/">
+        <h2 class="post-title">
+            [spring] spring异步原理和事件驱动（@Async and ApplicationListener）
+        </h2>
+        <h3 class="post-subtitle">
+            spring异步原理，事件驱动原理分析
+        </h3>
+        <div class="post-content-preview">
+            @Asyncspring对@Async的处理和事务处理大同小异。@EnableAsync注解通过@Import了AsyncConfigurationSelector类，这个类默认为PROXY模式，为容器中注册了ProxyAsyncConfiguration。1234567891011@Overridepublic String[] selectImports(AdviceMode advic......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2018-12-11
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#spring" title="spring">spring</a>
+            
+        </div>
+    
+
+</div>
+<hr>
 
 <div class="post-preview">
 
@@ -495,7 +523,7 @@ Install HexoInstall Node.js  and Git
             
         
             
-            <a href="/tags/#spring" title="spring" rel="4">spring</a>
+            <a href="/tags/#spring" title="spring" rel="5">spring</a>
             
         
             
@@ -586,6 +614,10 @@ Install HexoInstall Node.js  and Git
     <ul>
       
         <li>
+          <a href="/article/article6/">[spring] spring异步原理和事件驱动（@Async and ApplicationListener）</a>
+        </li>
+      
+        <li>
           <a href="/article/article5/">[spring] spring事务原理（@Transactional）</a>
         </li>
       
@@ -599,10 +631,6 @@ Install HexoInstall Node.js  and Git
       
         <li>
           <a href="/article/article2/">[spring] spring源码解析（Bean创建过程）</a>
-        </li>
-      
-        <li>
-          <a href="/article/article1/">[java基础] 类加载机制</a>
         </li>
       
     </ul>
@@ -629,7 +657,7 @@ Install HexoInstall Node.js  and Git
         
     <h5>ARCHIVES</h5>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">3</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">3</span></li></ul>
     </div>
 
         <hr>

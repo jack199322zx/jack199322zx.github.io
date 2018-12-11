@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          [spring] spring异步原理和事件驱动（@Async and ApplicationListener） - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/article6/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#spring" title="spring">spring</a>
+                            
+                        </div>
+                        <h1>[spring] spring异步原理和事件驱动（@Async and ApplicationListener）</h1>
+                        <h2 class="subheading">spring异步原理，事件驱动原理分析</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2018-12-11
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="Async"><a href="#Async" class="headerlink" title="@Async"></a>@Async</h1><p>spring对@Async的处理和事务处理大同小异。<br>@EnableAsync注解通过@Import了AsyncConfigurationSelector类，这个类默认为PROXY模式，为容器中注册了ProxyAsyncConfiguration。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">public String[] selectImports(AdviceMode adviceMode) &#123;</span><br><span class="line">	switch (adviceMode) &#123;</span><br><span class="line">		case PROXY:</span><br><span class="line">			return new String[] &#123; ProxyAsyncConfiguration.class.getName() &#125;;</span><br><span class="line">		case ASPECTJ:</span><br><span class="line">			return new String[] &#123; ASYNC_EXECUTION_ASPECT_CONFIGURATION_CLASS_NAME &#125;;</span><br><span class="line">		default:</span><br><span class="line">			return null;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>再来看下ProxyAsyncConfiguration，此类为容器中注册了AsyncAnnotationBeanPostProcessor。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@Role(BeanDefinition.ROLE_INFRASTRUCTURE)</span><br><span class="line">public class ProxyAsyncConfiguration extends AbstractAsyncConfiguration &#123;</span><br><span class="line"></span><br><span class="line">	@Bean(name = TaskManagementConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME)</span><br><span class="line">	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)</span><br><span class="line">	public AsyncAnnotationBeanPostProcessor asyncAdvisor() &#123;</span><br><span class="line">		Assert.notNull(this.enableAsync, "@EnableAsync annotation metadata was not injected");</span><br><span class="line">		AsyncAnnotationBeanPostProcessor bpp = new AsyncAnnotationBeanPostProcessor();</span><br><span class="line">		Class&lt;? extends Annotation&gt; customAsyncAnnotation = this.enableAsync.getClass("annotation");</span><br><span class="line">		if (customAsyncAnnotation != AnnotationUtils.getDefaultValue(EnableAsync.class, "annotation")) &#123;</span><br><span class="line">			bpp.setAsyncAnnotationType(customAsyncAnnotation);</span><br><span class="line">		&#125;</span><br><span class="line">		if (this.executor != null) &#123;</span><br><span class="line">			bpp.setExecutor(this.executor);</span><br><span class="line">		&#125;</span><br><span class="line">		if (this.exceptionHandler != null) &#123;</span><br><span class="line">			bpp.setExceptionHandler(this.exceptionHandler);</span><br><span class="line">		&#125;</span><br><span class="line">		bpp.setProxyTargetClass(this.enableAsync.getBoolean("proxyTargetClass"));</span><br><span class="line">		bpp.setOrder(this.enableAsync.&lt;Integer&gt;getNumber("order"));</span><br><span class="line">		return bpp;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们理一下这个后置处理器的关系：AsyncAnnotationBeanPostProcessor –&gt; AbstractBeanFactoryAwareAdvisingPostProcessor –&gt; AbstractAdvisingBeanPostProcessor。<br>AbstractAdvisingBeanPostProcessor中重写了postProcessAfterInitialization。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">   @Override</span><br><span class="line">public Object postProcessAfterInitialization(Object bean, String beanName) &#123;</span><br><span class="line">	if (bean instanceof AopInfrastructureBean) &#123;</span><br><span class="line">		// Ignore AOP infrastructure such as scoped proxies.</span><br><span class="line">		return bean;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (bean instanceof Advised) &#123;</span><br><span class="line">		Advised advised = (Advised) bean;</span><br><span class="line">		if (!advised.isFrozen() &amp;&amp; isEligible(AopUtils.getTargetClass(bean))) &#123;</span><br><span class="line">			// Add our local Advisor to the existing proxy's Advisor chain...</span><br><span class="line">			if (this.beforeExistingAdvisors) &#123;</span><br><span class="line">				advised.addAdvisor(0, this.advisor);</span><br><span class="line">			&#125;</span><br><span class="line">			else &#123;</span><br><span class="line">				advised.addAdvisor(this.advisor);</span><br><span class="line">			&#125;</span><br><span class="line">			return bean;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (isEligible(bean, beanName)) &#123;</span><br><span class="line">		ProxyFactory proxyFactory = prepareProxyFactory(bean, beanName);</span><br><span class="line">		if (!proxyFactory.isProxyTargetClass()) &#123;</span><br><span class="line">			evaluateProxyInterfaces(bean.getClass(), proxyFactory);</span><br><span class="line">		&#125;</span><br><span class="line">		proxyFactory.addAdvisor(this.advisor);</span><br><span class="line">		customizeProxyFactory(proxyFactory);</span><br><span class="line">		return proxyFactory.getProxy(getProxyClassLoader());</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// No async proxy needed.</span><br><span class="line">	return bean;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">protected boolean isEligible(Class&lt;?&gt; targetClass) &#123;</span><br><span class="line">	Boolean eligible = this.eligibleBeans.get(targetClass);</span><br><span class="line">	if (eligible != null) &#123;</span><br><span class="line">		return eligible;</span><br><span class="line">	&#125;</span><br><span class="line">	eligible = AopUtils.canApply(this.advisor, targetClass);</span><br><span class="line">	this.eligibleBeans.put(targetClass, eligible);</span><br><span class="line">	return eligible;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>分析一下这个方法，被spring aop创建的代理对象都会以Advised的形式封装。<br>因此被aop代理过的对象都会进入到isEligible的判断，判断依据AopUtils.canApply(this.advisor, targetClass)，进入到这层判断：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">   public static boolean canApply(Advisor advisor, Class&lt;?&gt; targetClass, boolean hasIntroductions) &#123;</span><br><span class="line">	if (advisor instanceof IntroductionAdvisor) &#123;</span><br><span class="line">		return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);</span><br><span class="line">	&#125;</span><br><span class="line">	else if (advisor instanceof PointcutAdvisor) &#123;</span><br><span class="line">		PointcutAdvisor pca = (PointcutAdvisor) advisor;</span><br><span class="line">		return canApply(pca.getPointcut(), targetClass, hasIntroductions);</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		// It doesn't have a pointcut so we assume it applies.</span><br><span class="line">		return true;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通知若是PointcutAdvisor类型，会进一步判断是否可以应用：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">   public static boolean canApply(Pointcut pc, Class&lt;?&gt; targetClass, boolean hasIntroductions) &#123;</span><br><span class="line">	Assert.notNull(pc, "Pointcut must not be null");</span><br><span class="line">	if (!pc.getClassFilter().matches(targetClass)) &#123;</span><br><span class="line">		return false;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	MethodMatcher methodMatcher = pc.getMethodMatcher();</span><br><span class="line">	if (methodMatcher == MethodMatcher.TRUE) &#123;</span><br><span class="line">		// No need to iterate the methods if we're matching any method anyway...</span><br><span class="line">		return true;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	IntroductionAwareMethodMatcher introductionAwareMethodMatcher = null;</span><br><span class="line">	if (methodMatcher instanceof IntroductionAwareMethodMatcher) &#123;</span><br><span class="line">		introductionAwareMethodMatcher = (IntroductionAwareMethodMatcher) methodMatcher;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	Set&lt;Class&lt;?&gt;&gt; classes = new LinkedHashSet&lt;Class&lt;?&gt;&gt;(ClassUtils.getAllInterfacesForClassAsSet(targetClass));</span><br><span class="line">	classes.add(targetClass);</span><br><span class="line">	for (Class&lt;?&gt; clazz : classes) &#123;</span><br><span class="line">		Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);</span><br><span class="line">		for (Method method : methods) &#123;</span><br><span class="line">			if ((introductionAwareMethodMatcher != null &amp;&amp;</span><br><span class="line">					introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions)) ||</span><br><span class="line">					methodMatcher.matches(method, targetClass)) &#123;</span><br><span class="line">				return true;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个方法就不详细讲了，本质还是将方法匹配@Async，找不到返回false，找到了返回true。<br>这里标注@Async的方法会返回true，并且将advised.addAdvisor(0, this.advisor)，加入到增强器链中。</p>
+<h2 id="抛出疑问1"><a href="#抛出疑问1" class="headerlink" title="抛出疑问1"></a>抛出疑问1</h2><p>整个AbstractAdvisingBeanPostProcessor多出用到了advisor，但advisor又是在哪里初始化的呢？</p>
+<h2 id="解答"><a href="#解答" class="headerlink" title="解答"></a>解答</h2><p>advisor被protected修饰，能够被子类继承，在AsyncAnnotationBeanPostProcessor中重写了setBeanFactory方法。<br>在初始化bean的时候会优先调用aware接口的方法，AsyncAnnotationBeanPostProcessor中有下面一段代码：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">   @Override</span><br><span class="line">public void setBeanFactory(BeanFactory beanFactory) &#123;</span><br><span class="line">	super.setBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">	AsyncAnnotationAdvisor advisor = new AsyncAnnotationAdvisor(this.executor, this.exceptionHandler);</span><br><span class="line">	if (this.asyncAnnotationType != null) &#123;</span><br><span class="line">		advisor.setAsyncAnnotationType(this.asyncAnnotationType);</span><br><span class="line">	&#125;</span><br><span class="line">	advisor.setBeanFactory(beanFactory);</span><br><span class="line">	this.advisor = advisor;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里初始化了advisor为AsyncAnnotationAdvisor类型，而postProcessAfterInitialization发生在初始化之后。</p>
+<h2 id="抛出疑问2"><a href="#抛出疑问2" class="headerlink" title="抛出疑问2"></a>抛出疑问2</h2><p>那么有了这些准备工作，@Async的方法是怎样工作的呢？</p>
+<h2 id="解答-1"><a href="#解答-1" class="headerlink" title="解答"></a>解答</h2><p>答案还是在new AsyncAnnotationAdvisor的时候，该类的构造方法中：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">   public AsyncAnnotationAdvisor(Executor executor, AsyncUncaughtExceptionHandler exceptionHandler) &#123;</span><br><span class="line">	Set&lt;Class&lt;? extends Annotation&gt;&gt; asyncAnnotationTypes = new LinkedHashSet&lt;Class&lt;? extends Annotation&gt;&gt;(2);</span><br><span class="line">	asyncAnnotationTypes.add(Async.class);</span><br><span class="line">	try &#123;</span><br><span class="line">		asyncAnnotationTypes.add((Class&lt;? extends Annotation&gt;)</span><br><span class="line">				ClassUtils.forName("javax.ejb.Asynchronous", AsyncAnnotationAdvisor.class.getClassLoader()));</span><br><span class="line">	&#125;</span><br><span class="line">	catch (ClassNotFoundException ex) &#123;</span><br><span class="line">		// If EJB 3.1 API not present, simply ignore.</span><br><span class="line">	&#125;</span><br><span class="line">	if (exceptionHandler != null) &#123;</span><br><span class="line">		this.exceptionHandler = exceptionHandler;</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		this.exceptionHandler = new SimpleAsyncUncaughtExceptionHandler();</span><br><span class="line">	&#125;</span><br><span class="line">	this.advice = buildAdvice(executor, this.exceptionHandler);</span><br><span class="line">	this.pointcut = buildPointcut(asyncAnnotationTypes);</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">protected Advice buildAdvice(Executor executor, AsyncUncaughtExceptionHandler exceptionHandler) &#123;</span><br><span class="line">	return new AnnotationAsyncExecutionInterceptor(executor, exceptionHandler);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>buildAdvice创建了AnnotationAsyncExecutionInterceptor，而这个拦截器本质也是MethodInterceptor。<br>当调用目标方法时，进入到代理对象的intercept方法：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable &#123;</span><br><span class="line">	Object oldProxy = null;</span><br><span class="line">	boolean setProxyContext = false;</span><br><span class="line">	Class&lt;?&gt; targetClass = null;</span><br><span class="line">	Object target = null;</span><br><span class="line">	try &#123;</span><br><span class="line">		if (this.advised.exposeProxy) &#123;</span><br><span class="line">			// Make invocation available if necessary.</span><br><span class="line">			oldProxy = AopContext.setCurrentProxy(proxy);</span><br><span class="line">			setProxyContext = true;</span><br><span class="line">		&#125;</span><br><span class="line">		// May be null. Get as late as possible to minimize the time we</span><br><span class="line">		// "own" the target, in case it comes from a pool...</span><br><span class="line">		target = getTarget();</span><br><span class="line">		if (target != null) &#123;</span><br><span class="line">			targetClass = target.getClass();</span><br><span class="line">		&#125;</span><br><span class="line">		List&lt;Object&gt; chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);</span><br><span class="line">		Object retVal;</span><br><span class="line">		// Check whether we only have one InvokerInterceptor: that is,</span><br><span class="line">		// no real advice, but just reflective invocation of the target.</span><br><span class="line">		if (chain.isEmpty() &amp;&amp; Modifier.isPublic(method.getModifiers())) &#123;</span><br><span class="line">			// We can skip creating a MethodInvocation: just invoke the target directly.</span><br><span class="line">			// Note that the final invoker must be an InvokerInterceptor, so we know</span><br><span class="line">			// it does nothing but a reflective operation on the target, and no hot</span><br><span class="line">			// swapping or fancy proxying.</span><br><span class="line">			Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);</span><br><span class="line">			retVal = methodProxy.invoke(target, argsToUse);</span><br><span class="line">		&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			// We need to create a method invocation...</span><br><span class="line">			retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy).proceed();</span><br><span class="line">		&#125;</span><br><span class="line">		retVal = processReturnType(proxy, target, method, retVal);</span><br><span class="line">		return retVal;</span><br><span class="line">	&#125;</span><br><span class="line">	finally &#123;</span><br><span class="line">		if (target != null) &#123;</span><br><span class="line">			releaseTarget(target);</span><br><span class="line">		&#125;</span><br><span class="line">		if (setProxyContext) &#123;</span><br><span class="line">			// Restore old proxy.</span><br><span class="line">			AopContext.setCurrentProxy(oldProxy);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>跟AOP一致，此时获取的拦截器链中只有AnnotationAsyncExecutionInterceptor，最后调用AnnotationAsyncExecutionInterceptor的invoke方法异步执行任务。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">public Object invoke(final MethodInvocation invocation) throws Throwable &#123;</span><br><span class="line">	Class&lt;?&gt; targetClass = (invocation.getThis() != null ? AopUtils.getTargetClass(invocation.getThis()) : null);</span><br><span class="line">	Method specificMethod = ClassUtils.getMostSpecificMethod(invocation.getMethod(), targetClass);</span><br><span class="line">	final Method userDeclaredMethod = BridgeMethodResolver.findBridgedMethod(specificMethod);</span><br><span class="line"></span><br><span class="line">	AsyncTaskExecutor executor = determineAsyncExecutor(userDeclaredMethod);</span><br><span class="line">	if (executor == null) &#123;</span><br><span class="line">		throw new IllegalStateException(</span><br><span class="line">				"No executor specified and no default executor set on AsyncExecutionInterceptor either");</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	Callable&lt;Object&gt; task = new Callable&lt;Object&gt;() &#123;</span><br><span class="line">		@Override</span><br><span class="line">		public Object call() throws Exception &#123;</span><br><span class="line">			try &#123;</span><br><span class="line">				Object result = invocation.proceed();</span><br><span class="line">				if (result instanceof Future) &#123;</span><br><span class="line">					return ((Future&lt;?&gt;) result).get();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			catch (ExecutionException ex) &#123;</span><br><span class="line">				handleError(ex.getCause(), userDeclaredMethod, invocation.getArguments());</span><br><span class="line">			&#125;</span><br><span class="line">			catch (Throwable ex) &#123;</span><br><span class="line">				handleError(ex, userDeclaredMethod, invocation.getArguments());</span><br><span class="line">			&#125;</span><br><span class="line">			return null;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	return doSubmit(task, executor, invocation.getMethod().getReturnType());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>这里要提醒的是，spring中异步任务的执行determineAsyncExecutor需要决定使用Executor，spring会优先从缓存中寻找executor，如果找不到则会根据@Async的value属性作为标识符进行判定，value的值默认为空串，如果有值，spring将会创建一个以此标识符命名的线程池，此时如果没有获取到是会抛出异常的；如果不设定value，spring会去获取配置的TaskExecutor，如果找不到配置的则会默认创建SimpleAsyncTaskExecutor。</p>
+<h1 id="事件驱动"><a href="#事件驱动" class="headerlink" title="事件驱动"></a>事件驱动</h1><p>ApplicationContext继承了ApplicationEventPublisher，可以调用publishEvent方法发布事件。<br>而事件的监听者可以通过实现ApplicationListener&lt;? extends ApplicationEvent&gt;重写onApplicationEvent来获取事件。</p>
+<h2 id="事件驱动原理"><a href="#事件驱动原理" class="headerlink" title="事件驱动原理"></a>事件驱动原理</h2><p>AbstractApplicationContext中定义了publishEvent方法。会获取事件广播器，委托其发布事件。<br>默认的事件广播器是SimpleApplicationEventMulticaster。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">   protected void publishEvent(Object event, ResolvableType eventType) &#123;</span><br><span class="line">	Assert.notNull(event, "Event must not be null");</span><br><span class="line">	if (logger.isTraceEnabled()) &#123;</span><br><span class="line">		logger.trace("Publishing event in " + getDisplayName() + ": " + event);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// Decorate event as an ApplicationEvent if necessary</span><br><span class="line">	ApplicationEvent applicationEvent;</span><br><span class="line">	if (event instanceof ApplicationEvent) &#123;</span><br><span class="line">		applicationEvent = (ApplicationEvent) event;</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		applicationEvent = new PayloadApplicationEvent&lt;Object&gt;(this, event);</span><br><span class="line">		if (eventType == null) &#123;</span><br><span class="line">			eventType = ((PayloadApplicationEvent)applicationEvent).getResolvableType();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// Multicast right now if possible - or lazily once the multicaster is initialized</span><br><span class="line">	if (this.earlyApplicationEvents != null) &#123;</span><br><span class="line">		this.earlyApplicationEvents.add(applicationEvent);</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// Publish event via parent context as well...</span><br><span class="line">	if (this.parent != null) &#123;</span><br><span class="line">		if (this.parent instanceof AbstractApplicationContext) &#123;</span><br><span class="line">			((AbstractApplicationContext) this.parent).publishEvent(event, eventType);</span><br><span class="line">		&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			this.parent.publishEvent(event);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>进入到multicastEvent方法：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">public void multicastEvent(final ApplicationEvent event, ResolvableType eventType) &#123;</span><br><span class="line">	ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));</span><br><span class="line">	for (final ApplicationListener&lt;?&gt; listener : getApplicationListeners(event, type)) &#123;</span><br><span class="line">		Executor executor = getTaskExecutor();</span><br><span class="line">		if (executor != null) &#123;</span><br><span class="line">			executor.execute(new Runnable() &#123;</span><br><span class="line">				@Override</span><br><span class="line">				public void run() &#123;</span><br><span class="line">					invokeListener(listener, event);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;</span><br><span class="line">		else &#123;</span><br><span class="line">			invokeListener(listener, event);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>很多人有一个误区，认为这里getTaskExecutor就是从容器中获取配置的TaskExecutor，如果有就异步执行该任务。其实不是的，这里的getTaskExecutor返回的就是属性taskExecutor，默认为null。spring默认没有直接提供异步处理任务，@Async的本质还是使用代理类来异步执行任务，而如果想要不使用代理类，直接用自己定义的线程池，就需要自定义个事件广播器，显示调用setTaskExecutor配置线程池来完成异步任务处理。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><pre><code class="shell">protected void invokeListener(ApplicationListener listener, ApplicationEvent event) {
+    ErrorHandler errorHandler = getErrorHandler();
+    if (errorHandler != null) {
+        try {
+            listener.onApplicationEvent(event);
+        }
+        catch (Throwable err) {
+            errorHandler.handleError(err);
+        }
+    }
+    else {
+        try {
+            listener.onApplicationEvent(event);
+        }
+        catch (ClassCastException ex) {
+            // Possibly a lambda-defined listener which we could not resolve the generic event type for
+            LogFactory.getLog(getClass()).debug("Non-matching event type for listener: " + listener, ex);
+        }
+    }
+}
+</code></pre>
+<p>invokeListener将调用监听者的onApplicationEvent方法。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/article5/" data-toggle="tooltip" data-placement="top" title="[spring] spring事务原理（@Transactional）">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#Async"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">@Async</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#抛出疑问1"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">抛出疑问1</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#解答"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">解答</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#抛出疑问2"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">抛出疑问2</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#解答-1"><span class="toc-nav-number">1.4.</span> <span class="toc-nav-text">解答</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#注意"><span class="toc-nav-number">1.4.1.</span> <span class="toc-nav-text">注意</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#事件驱动"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">事件驱动</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#事件驱动原理"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">事件驱动原理</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#最后"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">最后</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#spring" title="spring">spring</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2018 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
