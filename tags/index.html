@@ -132,13 +132,6 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
                             <a href="/archive/">Archives</a>
                         </li>
                         
@@ -147,6 +140,13 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -196,9 +196,9 @@
             <!-- 标签云 -->
             <div id="tag_cloud" class="tags">
                 
-                    <a href="#spring" title="spring" rel="4">spring</a>
-                
                     <a href="#java基础" title="java基础" rel="1">java基础</a>
+                
+                    <a href="#spring" title="spring" rel="5">spring</a>
                 
                     <a href="#vmvare" title="vmvare" rel="1">vmvare</a>
                 
@@ -212,9 +212,54 @@
 
             
             <div class="one-tag-list">
+                <span class="fa fa-tag listing-seperator" id="java基础">
+                    <span class="tag-text">java基础</span>
+                </span>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
+                     <a href="/article/article1/">
+                        <h2 class="post-title">
+                            [java基础] 类加载机制
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                关于类加载机制的探讨，分享一些心得
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
+                
+            </div>
+            
+            <div class="one-tag-list">
                 <span class="fa fa-tag listing-seperator" id="spring">
                     <span class="tag-text">spring</span>
                 </span>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
+                     <a href="/article/article2/">
+                        <h2 class="post-title">
+                            [spring] spring源码解析（Bean创建过程）
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                关于spring源码bean创建过程，分享一些心得
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
                 
                   <!-- <li class="listing-item">
                   <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
@@ -259,6 +304,25 @@
                   <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
                   </li> -->
                  <div class="post-preview">
+                     <a href="/article/article6/">
+                        <h2 class="post-title">
+                            [spring] spring异步原理和事件驱动（@Async and ApplicationListener）
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                spring异步原理，事件驱动原理分析
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
                      <a href="/article/article5/">
                         <h2 class="post-title">
                             [spring] spring事务原理（@Transactional）
@@ -266,51 +330,6 @@
                         
                             <h3 class="post-subtitle">
                                 spring事务原理分析
-                            </h3>
-                        
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </div>
-                <hr>
-                
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <div class="post-preview">
-                     <a href="/article/article2/">
-                        <h2 class="post-title">
-                            [spring] spring源码解析（Bean创建过程）
-                        </h2>
-                        
-                            <h3 class="post-subtitle">
-                                关于spring源码bean创建过程，分享一些心得
-                            </h3>
-                        
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </div>
-                <hr>
-                
-            </div>
-            
-            <div class="one-tag-list">
-                <span class="fa fa-tag listing-seperator" id="java基础">
-                    <span class="tag-text">java基础</span>
-                </span>
-                
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <div class="post-preview">
-                     <a href="/article/article1/">
-                        <h2 class="post-title">
-                            [java基础] 类加载机制
-                        </h2>
-                        
-                            <h3 class="post-subtitle">
-                                关于类加载机制的探讨，分享一些心得
                             </h3>
                         
                     </a>
