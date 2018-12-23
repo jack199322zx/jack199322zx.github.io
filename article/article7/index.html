@@ -14,11 +14,11 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <title>
         
-          Nino | Blog
+          [vmvare] vmvare搭建分布式环境 - Nino | Blog
         
     </title>
 
-    <link rel="canonical" href="http://www.52nino.cn/404.html">
+    <link rel="canonical" href="http://www.52nino.cn/article/article7/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -69,8 +69,8 @@
 <style type="text/css">
     header.intro-header{
         
-            background-image: url('/img/header_img/404.png')
-            /*page*/
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
         
     }
     
@@ -83,10 +83,18 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                 
-                    <div class="site-heading">
-                        <h1>Nino</h1>
-                        <!--<hr class="small">-->
-                        <span class="subheading">你来到了没有知识的荒原</span>
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#vmvare" title="vmvare">vmvare</a>
+                            
+                        </div>
+                        <h1>[vmvare] vmvare搭建分布式环境</h1>
+                        <h2 class="subheading">vmvare踩坑之路</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2018-12-23
+                        </span>
                     </div>
                 
 
@@ -189,25 +197,158 @@
 
 
     <!-- Main Content -->
-    
-<!-- Page Header -->
-<header class="intro-header" style="background-image: url('/img/header_img/404.png')">
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
     <div class="container">
         <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
-                <div class="site-heading">
-                    <h1>404</h1>
-                    <!--<hr class="small">-->
-                    <span class="subheading">你来到了没有知识的荒原</span>
-                </div>
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>首先安装好vmvare破解版和centos 7 64位的镜像文件（镜像文件可以区centos官网下载，vmvare破解版网上搜一下就能下载）。<br>新建虚拟机，选择自定义安装：<br><img src="/img/article/vmvare1.png" alt="prepare"><br>选择下一步，点击稍后安装操作系统。<br><img src="/img/article/vmvare2.png" alt="prepare"><br>客户机这里我用的centos7 64位的linux操作系统。<br><img src="/img/article/vmvare3.png" alt="prepare"><br>接下来就是虚拟机文件存储位置，处理器根据你的电脑配置来创建，普通机器推荐2个处理器，1核的配置。<br>虚拟机的内存推荐设置为2G，也就是2024MB；网络链接选择NAT模式。<br>后面的全部点击下一步完成配置。</p>
+<h1 id="接下来"><a href="#接下来" class="headerlink" title="接下来"></a>接下来</h1><p>新建好虚拟机之后，在虚拟机设置中将下载好的镜像文件设置好，如下图：<br><img src="/img/article/vmvare4.jpg" alt="prepare"><br>设置完成后，点击开启虚拟机，这样就开始了我们“愉快”的采坑之路。<br>等待虚拟机创建完成，期间可以设置root账号及密码。<br>虚拟机启动完毕后，首先第一件要做的事情就是检查你的ip配置。<br>输入ifconfig指令，可以看到虚拟机ip地址的情况。<br>如果提示command not found，则说明不支持此指令，可以输入ip addr进行查看。<br><img src="/img/article/vmvare5.png" alt="prepare"></p>
+<h2 id="设置静态IP"><a href="#设置静态IP" class="headerlink" title="设置静态IP"></a>设置静态IP</h2><p><img src="/img/article/vmvare9.png" alt="prepare"><br>windows系统下使用cmd命令查看本机系统的ip，查找你VMnet8分配的ip4地址，记住这个地址。<br><img src="/img/article/vmvare7.png" alt="prepare"><br>这里我的文件是ifcfg-ens33，其他的机器可能有所不同，不过都是ens后缀的。<br>编辑此文件如下：<br><img src="/img/article/vmvare8.png" alt="prepare"><br>ONBOOT改为yes，BOOTPROTO改为static，添加IPADDR，NETMASK，GATEWAY的配置。<br>其中IPADDR前面三个分段和本机VM8的ip4地址相同，最后一个分段自己分配。GATEWAY同理，不要和IPADDR重复，NETMASK为255.255.255.0。<br>这三个配置完毕之后，输入指令service network restart，之后点击编辑 -&gt; 虚拟网络编辑器。<br><img src="/img/article/vmvare10.jpg" alt="prepare"><br>点击更改设置，选中VM8，点击NAT设置：<br><img src="/img/article/vmvare11.png" alt="prepare"><br>将网关和之前配置的GATEWAY保持一致，检查下子网IP，子网掩码，没问题点击应用。</p>
+<h2 id="修改hostname"><a href="#修改hostname" class="headerlink" title="修改hostname"></a>修改hostname</h2><p>输入vi /etc/sysconfig/network，修改hostname<br><img src="/img/article/vmvare12.png" alt="prepare"><br><img src="/img/article/vmvare13.png" alt="prepare"><br>之后输入vi /etc/hosts，修改hostname，如果是centos7，还需要vi /etc/hostname进行修改。<br>可以参考：<a href="https://www.cnblogs.com/zhaojiedi1992/p/zhaojiedi_linux_043_hostname.html" target="_blank" rel="noopener">https://www.cnblogs.com/zhaojiedi1992/p/zhaojiedi_linux_043_hostname.html</a></p>
+<h2 id="关闭防火墙"><a href="#关闭防火墙" class="headerlink" title="关闭防火墙"></a>关闭防火墙</h2><p>centos7下关闭防火墙：systemctl stop firewalld，开机禁用systemctl disable firewalld，开机启用systemctl disable firewalld。<br>可以参考：<a href="https://www.cnblogs.com/moxiaoan/p/5683743.html" target="_blank" rel="noopener">https://www.cnblogs.com/moxiaoan/p/5683743.html</a></p>
+<h2 id="最后的检查"><a href="#最后的检查" class="headerlink" title="最后的检查"></a>最后的检查</h2><p>输入hostname查看主机名修改是否成功，ping本机ip看是否能ping通，检查一下防火墙是否关闭，完毕之后关闭虚拟机。</p>
+<h1 id="克隆虚拟机"><a href="#克隆虚拟机" class="headerlink" title="克隆虚拟机"></a>克隆虚拟机</h1><p>克隆很简单，点击虚拟机，右键选中管理 -&gt; 克隆，克隆之后的虚拟机修改一下hostname，静态ip，输入sync，reboot，重启完成再检查一遍，就完成了分布式环境的部署。</p>
+<h1 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h1><p>这样直接进行的克隆意义并不大，最好的方式是一台机器已经搭建好各种环境如（java，maven，node，中间件）。搭建好这些环境之后进行克隆才应该是最正确的方式。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/article6/" data-toggle="tooltip" data-placement="top" title="">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#前言"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#接下来"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">接下来</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#设置静态IP"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">设置静态IP</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#修改hostname"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">修改hostname</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#关闭防火墙"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">关闭防火墙</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#最后的检查"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">最后的检查</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#克隆虚拟机"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">克隆虚拟机</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#写在最后"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">写在最后</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#vmvare" title="vmvare">vmvare</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
             </div>
         </div>
     </div>
-</header>
+</article>
 
+
+
+
+
+
+
+
+<!-- async load function -->
 <script>
-    document.body.classList.add('page-fullscreen');
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
 </script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
 
 
     <!-- Footer -->

@@ -14,7 +14,7 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <title>
         
-          [spring] spring异步原理和事件驱动（@Async and ApplicationListener） - Nino | Blog
+          Nino | Blog
         
     </title>
 
@@ -69,7 +69,7 @@
 <style type="text/css">
     header.intro-header{
         
-            background-image: url('/img/article_header/article_header.png')
+            background-image: url('/img/article_header/article_bg.jpg')
             /*post*/
         
     }
@@ -86,11 +86,9 @@
                     <div class="post-heading">
                         <div class="tags">
                             
-                              <a class="tag" href="/tags/#spring" title="spring">spring</a>
-                            
                         </div>
-                        <h1>[spring] spring异步原理和事件驱动（@Async and ApplicationListener）</h1>
-                        <h2 class="subheading">spring异步原理，事件驱动原理分析</h2>
+                        <h1></h1>
+                        <h2 class="subheading"></h2>
                         <span class="meta">
                             Posted by Nino on
                             2018-12-11
@@ -140,6 +138,13 @@
 
                         
                         <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
                             <a href="/archive/">Archives</a>
                         </li>
                         
@@ -148,13 +153,6 @@
                         
                         <li>
                             <a href="/tags/">Tags</a>
-                        </li>
-                        
-                    
-
-                        
-                        <li>
-                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -210,7 +208,14 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <h1 id="Async"><a href="#Async" class="headerlink" title="@Async"></a>@Async</h1><p>spring对@Async的处理和事务处理大同小异。<br>@EnableAsync注解通过@Import了AsyncConfigurationSelector类，这个类默认为PROXY模式，为容器中注册了ProxyAsyncConfiguration。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">public String[] selectImports(AdviceMode adviceMode) &#123;</span><br><span class="line">	switch (adviceMode) &#123;</span><br><span class="line">		case PROXY:</span><br><span class="line">			return new String[] &#123; ProxyAsyncConfiguration.class.getName() &#125;;</span><br><span class="line">		case ASPECTJ:</span><br><span class="line">			return new String[] &#123; ASYNC_EXECUTION_ASPECT_CONFIGURATION_CLASS_NAME &#125;;</span><br><span class="line">		default:</span><br><span class="line">			return null;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+                <hr>
+<p>   title: “[spring] spring异步原理和事件驱动（@Async and ApplicationListener）”<br>   catalog: true<br>   toc_nav_num: true<br>   date: 2018-12-11 14:58:28<br>   subtitle: “spring异步原理，事件驱动原理分析”<br>   header-img: “/img/article_header/article_header.png”<br>   tags:</p>
+<ul>
+<li>spring<br>catagories:</li>
+<li>spring</li>
+</ul>
+<hr>
+<h1 id="Async"><a href="#Async" class="headerlink" title="@Async"></a>@Async</h1><p>spring对@Async的处理和事务处理大同小异。<br>@EnableAsync注解通过@Import了AsyncConfigurationSelector类，这个类默认为PROXY模式，为容器中注册了ProxyAsyncConfiguration。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">public String[] selectImports(AdviceMode adviceMode) &#123;</span><br><span class="line">	switch (adviceMode) &#123;</span><br><span class="line">		case PROXY:</span><br><span class="line">			return new String[] &#123; ProxyAsyncConfiguration.class.getName() &#125;;</span><br><span class="line">		case ASPECTJ:</span><br><span class="line">			return new String[] &#123; ASYNC_EXECUTION_ASPECT_CONFIGURATION_CLASS_NAME &#125;;</span><br><span class="line">		default:</span><br><span class="line">			return null;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>再来看下ProxyAsyncConfiguration，此类为容器中注册了AsyncAnnotationBeanPostProcessor。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@Role(BeanDefinition.ROLE_INFRASTRUCTURE)</span><br><span class="line">public class ProxyAsyncConfiguration extends AbstractAsyncConfiguration &#123;</span><br><span class="line"></span><br><span class="line">	@Bean(name = TaskManagementConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME)</span><br><span class="line">	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)</span><br><span class="line">	public AsyncAnnotationBeanPostProcessor asyncAdvisor() &#123;</span><br><span class="line">		Assert.notNull(this.enableAsync, "@EnableAsync annotation metadata was not injected");</span><br><span class="line">		AsyncAnnotationBeanPostProcessor bpp = new AsyncAnnotationBeanPostProcessor();</span><br><span class="line">		Class&lt;? extends Annotation&gt; customAsyncAnnotation = this.enableAsync.getClass("annotation");</span><br><span class="line">		if (customAsyncAnnotation != AnnotationUtils.getDefaultValue(EnableAsync.class, "annotation")) &#123;</span><br><span class="line">			bpp.setAsyncAnnotationType(customAsyncAnnotation);</span><br><span class="line">		&#125;</span><br><span class="line">		if (this.executor != null) &#123;</span><br><span class="line">			bpp.setExecutor(this.executor);</span><br><span class="line">		&#125;</span><br><span class="line">		if (this.exceptionHandler != null) &#123;</span><br><span class="line">			bpp.setExceptionHandler(this.exceptionHandler);</span><br><span class="line">		&#125;</span><br><span class="line">		bpp.setProxyTargetClass(this.enableAsync.getBoolean("proxyTargetClass"));</span><br><span class="line">		bpp.setOrder(this.enableAsync.&lt;Integer&gt;getNumber("order"));</span><br><span class="line">		return bpp;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>我们理一下这个后置处理器的关系：AsyncAnnotationBeanPostProcessor –&gt; AbstractBeanFactoryAwareAdvisingPostProcessor –&gt; AbstractAdvisingBeanPostProcessor。<br>AbstractAdvisingBeanPostProcessor中重写了postProcessAfterInitialization。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">   @Override</span><br><span class="line">public Object postProcessAfterInitialization(Object bean, String beanName) &#123;</span><br><span class="line">	if (bean instanceof AopInfrastructureBean) &#123;</span><br><span class="line">		// Ignore AOP infrastructure such as scoped proxies.</span><br><span class="line">		return bean;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (bean instanceof Advised) &#123;</span><br><span class="line">		Advised advised = (Advised) bean;</span><br><span class="line">		if (!advised.isFrozen() &amp;&amp; isEligible(AopUtils.getTargetClass(bean))) &#123;</span><br><span class="line">			// Add our local Advisor to the existing proxy's Advisor chain...</span><br><span class="line">			if (this.beforeExistingAdvisors) &#123;</span><br><span class="line">				advised.addAdvisor(0, this.advisor);</span><br><span class="line">			&#125;</span><br><span class="line">			else &#123;</span><br><span class="line">				advised.addAdvisor(this.advisor);</span><br><span class="line">			&#125;</span><br><span class="line">			return bean;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (isEligible(bean, beanName)) &#123;</span><br><span class="line">		ProxyFactory proxyFactory = prepareProxyFactory(bean, beanName);</span><br><span class="line">		if (!proxyFactory.isProxyTargetClass()) &#123;</span><br><span class="line">			evaluateProxyInterfaces(bean.getClass(), proxyFactory);</span><br><span class="line">		&#125;</span><br><span class="line">		proxyFactory.addAdvisor(this.advisor);</span><br><span class="line">		customizeProxyFactory(proxyFactory);</span><br><span class="line">		return proxyFactory.getProxy(getProxyClassLoader());</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// No async proxy needed.</span><br><span class="line">	return bean;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">protected boolean isEligible(Class&lt;?&gt; targetClass) &#123;</span><br><span class="line">	Boolean eligible = this.eligibleBeans.get(targetClass);</span><br><span class="line">	if (eligible != null) &#123;</span><br><span class="line">		return eligible;</span><br><span class="line">	&#125;</span><br><span class="line">	eligible = AopUtils.canApply(this.advisor, targetClass);</span><br><span class="line">	this.eligibleBeans.put(targetClass, eligible);</span><br><span class="line">	return eligible;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>分析一下这个方法，被spring aop创建的代理对象都会以Advised的形式封装。<br>因此被aop代理过的对象都会进入到isEligible的判断，判断依据AopUtils.canApply(this.advisor, targetClass)，进入到这层判断：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">   public static boolean canApply(Advisor advisor, Class&lt;?&gt; targetClass, boolean hasIntroductions) &#123;</span><br><span class="line">	if (advisor instanceof IntroductionAdvisor) &#123;</span><br><span class="line">		return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);</span><br><span class="line">	&#125;</span><br><span class="line">	else if (advisor instanceof PointcutAdvisor) &#123;</span><br><span class="line">		PointcutAdvisor pca = (PointcutAdvisor) advisor;</span><br><span class="line">		return canApply(pca.getPointcut(), targetClass, hasIntroductions);</span><br><span class="line">	&#125;</span><br><span class="line">	else &#123;</span><br><span class="line">		// It doesn't have a pointcut so we assume it applies.</span><br><span class="line">		return true;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
@@ -257,6 +262,10 @@
                 <!-- Pager -->
                 <ul class="pager">
                     
+                        <li class="previous">
+                            <a href="/article/article7/" data-toggle="tooltip" data-placement="top" title="[vmvare] vmvare搭建分布式环境">&larr; Previous Post</a>
+                        </li>
+                    
                     
                         <li class="next">
                             <a href="/article/article5/" data-toggle="tooltip" data-placement="top" title="[spring] spring事务原理（@Transactional）">Next Post &rarr;</a>
@@ -288,18 +297,6 @@
             <!-- Tabe of Content -->
             <!-- Table of Contents -->
 
-  
-    
-      <aside id="sidebar">
-        <div id="toc" class="toc-article">
-        <strong class="toc-title">Contents</strong>
-        
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#Async"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">@Async</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#抛出疑问1"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">抛出疑问1</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#解答"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">解答</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#抛出疑问2"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">抛出疑问2</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#解答-1"><span class="toc-nav-number">1.4.</span> <span class="toc-nav-text">解答</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#注意"><span class="toc-nav-number">1.4.1.</span> <span class="toc-nav-text">注意</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#事件驱动"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">事件驱动</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#事件驱动原理"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">事件驱动原理</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#最后"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">最后</span></a></li></ol></li></ol>
-        
-        </div>
-      </aside>
-    
-
                 
             <!-- Sidebar Container -->
             <div class="
@@ -314,8 +311,6 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#spring" title="spring">spring</a>
-                        
                     </div>
                 </section>
                 
