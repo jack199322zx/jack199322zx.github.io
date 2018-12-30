@@ -273,7 +273,7 @@
 <h2 id="解答-3"><a href="#解答-3" class="headerlink" title="解答"></a>解答</h2><p>集群环境下设置多个节点，每个节点拥有多个分片，分片会有主分片和副分片，当其中一个节点失效时，其上的分片所应对的数据在其他节点有完整的备份。<br>重新启动这个节点时，集群可以将缺失的副本分片再次进行分配。</p>
 <h2 id="抛出疑问5"><a href="#抛出疑问5" class="headerlink" title="抛出疑问5"></a>抛出疑问5</h2><p>在并发情况下，Elasticsearch如果保证读写一致？</p>
 <h2 id="解答-4"><a href="#解答-4" class="headerlink" title="解答"></a>解答</h2><p>es通过版本号使用乐观并发控制，以确保新版本不会被旧版本覆盖。比如同时更新一个文档时，第二个更新的请求会检索的版本的不一致，重新读取最新状态，再执行更新操作。</p>
-<h2 id="其他疑问"><a href="#其他疑问" class="headerlink" title="其他疑问"></a>其他疑问</h2><p>可参见es权威指南：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html、" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html、</a></p>
+<h2 id="其他疑问"><a href="#其他疑问" class="headerlink" title="其他疑问"></a>其他疑问</h2><p>可参见es权威指南：<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html</a><br>其它相关博客：<a href="https://www.cnblogs.com/luckcs/articles/7052932.html" target="_blank" rel="noopener">https://www.cnblogs.com/luckcs/articles/7052932.html</a></p>
 <h1 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h1><p>接下来将抽空余的时间，进一步学习es的源码和lucene底层机制。</p>
 
                 
