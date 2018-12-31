@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          [大数据] hive基础 - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/hive/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#hive" title="hive">hive</a>
+                            
+                        </div>
+                        <h1>[大数据] hive基础</h1>
+                        <h2 class="subheading">hive入门学习</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2018-12-31
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="什么是Hive"><a href="#什么是Hive" class="headerlink" title="什么是Hive"></a>什么是Hive</h1><p>hive是基于Hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供简单的sql查询功能，可以将sql语句转换为MapReduce任务进行运行，适合数据仓库的离线统计分析。<br>hive不太适合做交互式查询，执行MR作业的延迟较高，hive不支持对数据的改写和添加。</p>
+<h2 id="数据建立过程"><a href="#数据建立过程" class="headerlink" title="数据建立过程"></a>数据建立过程</h2><h3 id="数据源"><a href="#数据源" class="headerlink" title="数据源"></a>数据源</h3><p>可能来自由业务数据系统（关系型数据库），文档资料（csv，txt等），其他数据。</p>
+<h3 id="数据抽取"><a href="#数据抽取" class="headerlink" title="数据抽取"></a>数据抽取</h3><p>俗称的ETL的过程。<br>1.抽取（Extract）：把数据源的数据按照一定的方式读取出来。<br>2.转换（Transform）：不同数据源的数据它的格式是不一样的，不一定满足我们的要求，所以需要按照一定的规则进行转换。<br>3.装在（Load）：将满足格式的数据存取到数据仓库之中。</p>
+<h3 id="建立双射关系"><a href="#建立双射关系" class="headerlink" title="建立双射关系"></a>建立双射关系</h3><p>hive存储的数据存放在hdfs上，元数据会存放在metastore(可能是某个关系型数据库，比如mysql中)，元数据中存储了hive表的字段信息、所属者、hdfs上的路径等。<br>hive执行查询语句会从mestastore中读取到要查询的信息，然后去hdfs查询数据。</p>
+<h1 id="一条HQL语句如何在Hive的数据仓库中进行查询的？"><a href="#一条HQL语句如何在Hive的数据仓库中进行查询的？" class="headerlink" title="一条HQL语句如何在Hive的数据仓库中进行查询的？"></a>一条HQL语句如何在Hive的数据仓库中进行查询的？</h1><p>由解释器、编译器、优化器来共同完成HQL查询语句从词法解析、语法解析、编译、优化以及查询计划（Plan）的生成。<br>生成的查询计划存储在HDFS中，并在随后又MapReduce调用执行。</p>
+<h1 id="hive基本语法"><a href="#hive基本语法" class="headerlink" title="hive基本语法"></a>hive基本语法</h1><h2 id="创建管理表"><a href="#创建管理表" class="headerlink" title="创建管理表"></a>创建管理表</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">create table emp(</span><br><span class="line">empno int,</span><br><span class="line">empname string,</span><br><span class="line">job string,</span><br><span class="line">mgr int,</span><br><span class="line">hiredate string,</span><br><span class="line">salary double,</span><br><span class="line">comm double,</span><br><span class="line">deptno int)</span><br><span class="line">row format delimited</span><br><span class="line">fields terminated by '\t'; </span><br><span class="line"></span><br><span class="line">复制表结构(不会复制属性值，只会复制表结构)</span><br><span class="line">create table like_track_log like db_web_data.track_log;</span><br><span class="line"></span><br><span class="line">复制表(会复制属性以及属性值到新的表中)</span><br><span class="line">create table backup_track_log as select * from db_web_data.track_log;</span><br></pre></td></tr></table></figure>
+<h2 id="导入数据"><a href="#导入数据" class="headerlink" title="导入数据"></a>导入数据</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">本地导入 load data local inpath 'local_path/file' into table '表名'</span><br><span class="line">HDFS导入 load data inpath 'hdfs_path/file' into table '表名'</span><br><span class="line">覆盖导入 load data local inpath 'local_path/file' overwrite into table '表名'</span><br><span class="line">	    load data inpath 'local_path/file' overwrite into table '表名'</span><br><span class="line">查询导入 create table '表名' as select * from '表名'</span><br><span class="line">insert导入</span><br><span class="line">	追加 insert into table '表名' select * from '表名'</span><br><span class="line">	覆盖 insert overwrite into table '表名' select * from '表名'</span><br></pre></td></tr></table></figure>
+<h2 id="创建分区表"><a href="#创建分区表" class="headerlink" title="创建分区表"></a>创建分区表</h2><p>可以在create语句之后添加比如partitioned by (year string, month string)，或者使用alter table emp_part add partition (year=’2016’, month=’5’) location ‘/data’; </p>
+<h2 id="执行命令"><a href="#执行命令" class="headerlink" title="执行命令"></a>执行命令</h2><blockquote>
+<p>hive -e “select * from db_hive01.emp”<br>hive -f emp.hql<br>hive –hiveconf hive.root.logger=DEBUG</p>
+</blockquote>
+<h2 id="导出数据"><a href="#导出数据" class="headerlink" title="导出数据"></a>导出数据</h2><blockquote>
+<p>insert overwrite local directory ‘/usr/nino/home’ row format delimited fields terminated by ‘\t’ select <em> from staff<br>insert overwrite directory ‘path/‘  select </em> from staff;<br>bin/hive -e “select * from staff” &gt; /home/backup.log   </p>
+</blockquote>
+<h2 id="常用函数"><a href="#常用函数" class="headerlink" title="常用函数"></a>常用函数</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">select upper(empname) from emp;</span><br><span class="line">select unix_timestamp(trackTime) from bflog limit 3 ;</span><br><span class="line">select year(hiredate) from emp ;</span><br><span class="line">select month(hiredate) from emp ;</span><br><span class="line">select hour(hiredate) from emp ;</span><br><span class="line">select substr(hiredate,1,4) from .emp ;</span><br><span class="line">select split(hiredate,'-')[1] from emp ;</span><br><span class="line">select reverse(hiredate) from emp ;</span><br><span class="line">select concat(empno,'-',empname) from emp ;</span><br><span class="line"></span><br><span class="line">case when 条件1  then  ...</span><br><span class="line">     when 条件2  then  ...</span><br><span class="line">     else  end   </span><br><span class="line">```   </span><br><span class="line"></span><br><span class="line"><span class="meta">#</span># 自定义函数（UDF）</span><br><span class="line">```shell</span><br><span class="line">add jar /opt/test/mylower.jar ;</span><br><span class="line">CREATE TEMPORARY FUNCTION mylower AS 'org.gh.hadoop.hive.MyLower';</span><br></pre></td></tr></table></figure>
+<h2 id="内部表与外部表"><a href="#内部表与外部表" class="headerlink" title="内部表与外部表"></a>内部表与外部表</h2><p>伪代码：<br>hive&gt; CREATE TABLE custom_table(id int, name string)  location ‘/custom/z/hive/somedatabase’。<br>默认情况：inner，显示指定：external，比如hive&gt; CREATE EXTERNAL TABLE。</p>
+<blockquote>
+<p>内部表：删除表数据时，连同数据源以及元数据信息同时删除<br>外部表：1、只会删除元数据信息。2、共享数据，外部表相对而言也更加方便和安全。<br>相同之处：如果你导入数据时，操作于HDFS上，则会将数据进行迁移，并在metastore留下记录，而不是copy数据源。</p>
+</blockquote>
+<h2 id="元数据备份与还原"><a href="#元数据备份与还原" class="headerlink" title="元数据备份与还原"></a>元数据备份与还原</h2><p>备份：mysqldump -u root -p metastore &gt; /usr/nino/metastore.sql<br>还原：mysql -u root -p metastore &lt; /usr/nino/metastore.sql</p>
+<h1 id="日志清洗案例"><a href="#日志清洗案例" class="headerlink" title="日志清洗案例"></a>日志清洗案例</h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/bash</span><br><span class="line"><span class="meta">#</span>执行系统环境变量脚本，初始化一些变量信息</span><br><span class="line">. /etc/profile</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>定义Hive目录</span><br><span class="line">HIVE_DIR=/opt/modules/cdh/hive-0.13.1-cdh5.3.6</span><br><span class="line">HADOOP_DIR=/opt/modules/cdh/hadoop-2.5.0-cdh5.3.6</span><br><span class="line">HQL_DIR=/opt/modules/cdh/clean</span><br><span class="line">SQOOP_DIR=/opt/modules/cdh/sqoop-1.4.5-cdh5.3.6</span><br><span class="line"></span><br><span class="line">echo $HIVE_DIR</span><br><span class="line">echo $HADOOP_DIR</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>定义日志的存储路径</span><br><span class="line">WEB_LOG=/opt/modules/weblog</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>昨天的日期，用于访问目录</span><br><span class="line">YESTERDAY=$(date --date="1 day ago" +%Y%m%d)</span><br><span class="line"><span class="meta">#</span>在HDFS上创建指定文件夹</span><br><span class="line">echo "======正在创建目录======"</span><br><span class="line"><span class="meta">#</span>/weblog/20170725</span><br><span class="line"><span class="meta">$</span>HADOOP_DIR/bin/hdfs dfs -mkdir /weblog/$YESTERDAY</span><br><span class="line"></span><br><span class="line">echo "======正在检查数据表===="</span><br><span class="line"><span class="meta">$</span>HIVE_DIR/bin/hive -f $HQL_DIR/create_table_track_log.hql</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>遍历目录</span><br><span class="line">for i in `ls $WEB_LOG/$YESTERDAY`</span><br><span class="line">do</span><br><span class="line"><span class="meta">	#</span>20150828</span><br><span class="line">	DATE=$&#123;i:0:8&#125;</span><br><span class="line"><span class="meta">	#</span>18</span><br><span class="line">    HOUR=$&#123;i:8:2&#125;</span><br><span class="line"><span class="meta">  	#</span>上传文件到HDFS</span><br><span class="line">  	echo "======正在上传日志======"</span><br><span class="line"><span class="meta">  	#</span>bin/hdfs /opt/modules/weblog/2015082818 /weblog/20170726</span><br><span class="line"><span class="meta">  	$</span>HADOOP_DIR/bin/hdfs dfs -put $WEB_LOG/$YESTERDAY/$i /weblog/$YESTERDAY</span><br><span class="line"><span class="meta">	#</span>清洗日志</span><br><span class="line">	echo "======开始清洗=========="</span><br><span class="line"><span class="meta">	#</span> bin/yarn jar /home/admin/Desktop/clearlog.jar com.z.hive.etl.LogCleanMapReduce /weblog/20170726/2015082818 /user/hive/warehouse/syllabus.db/track_log/date=20170725/hour=18</span><br><span class="line"><span class="meta">	$</span>HADOOP_DIR/bin/yarn jar /home/admin/Desktop/clearlog.jar com.z.hive.etl.LogCleanMapReduce /weblog/$YESTERDAY/$i /user/hive/warehouse/syllabus.db/track_log/date=$DATE/hour=$HOUR</span><br><span class="line">	echo "======关联清洗后的数据=="</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive \</span><br><span class="line">	--hiveconf LOCATION_NEW=/user/hive/warehouse/syllabus.db/track_log/date=$DATE/hour=$HOUR \</span><br><span class="line">	--hiveconf DATE_NEW=$DATE \</span><br><span class="line">	--hiveconf HOUR_NEW=$HOUR \</span><br><span class="line">	-f $HQL_DIR/alter_table_track_log.hql</span><br><span class="line">done</span><br><span class="line">	echo "==开始分析网站流量数据=="</span><br><span class="line">	echo "==检查所有表结构========"</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive -f $HQL_DIR/create_session_info.hql</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive -f $HQL_DIR/create_session_info_temp1.hql</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive -f $HQL_DIR/create_session_info_temp2.hql</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive -f $HQL_DIR/create_result_info.hql</span><br><span class="line">	echo "==开始插入数据=========="</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive \</span><br><span class="line">	--hiveconf DATE_NEW=$YESTERDAY \</span><br><span class="line">	-f $HQL_DIR/insert_session_info_temp1.hql</span><br><span class="line"></span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive \</span><br><span class="line">	--hiveconf DATE_NEW=$YESTERDAY \</span><br><span class="line">	-f $HQL_DIR/insert_session_info_temp2.hql</span><br><span class="line"></span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive \</span><br><span class="line">	--hiveconf DATE_NEW=$YESTERDAY \</span><br><span class="line">	-f $HQL_DIR/insert_session_info.hql</span><br><span class="line"></span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive \</span><br><span class="line">	--hiveconf DATE_NEW=$YESTERDAY \</span><br><span class="line">	-f $HQL_DIR/insert_result_info.hql</span><br><span class="line"></span><br><span class="line">	echo "==开始导出数据到Mysql=="</span><br><span class="line"><span class="meta">	$</span>SQOOP_DIR/bin/sqoop --options-file $HQL_DIR/weblog_hive_2_mysql.opt</span><br><span class="line">	echo "==任务完成============="</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/bash</span><br><span class="line"><span class="meta">#</span>执行系统环境变量脚本，初始化一些变量信息</span><br><span class="line">. /etc/profile</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>定义Hive目录</span><br><span class="line">HIVE_DIR=/opt/modules/cdh/hive-0.13.1-cdh5.3.6</span><br><span class="line">HADOOP_DIR=/opt/modules/cdh/hadoop-2.5.0-cdh5.3.6</span><br><span class="line">HQL_DIR=/opt/modules/cdh/clean</span><br><span class="line"></span><br><span class="line">echo $HIVE_DIR</span><br><span class="line">echo $HADOOP_DIR</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>定义日志的存储路径</span><br><span class="line">WEB_LOG=/opt/modules/weblog</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>昨天的日期，用于访问目录</span><br><span class="line">YESTERDAY=$(date --date="1 day ago" +%Y%m%d)</span><br><span class="line"><span class="meta">#</span>在HDFS上创建指定文件夹</span><br><span class="line">echo "======正在创建目录======"</span><br><span class="line"><span class="meta">#</span>/weblog/20170725</span><br><span class="line"><span class="meta">$</span>HADOOP_DIR/bin/hdfs dfs -mkdir /weblog/$YESTERDAY</span><br><span class="line"></span><br><span class="line">echo "======正在检查数据表===="</span><br><span class="line"><span class="meta">$</span>HIVE_DIR/bin/hive -f $HQL_DIR/create_table_track_log.hql</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>遍历目录</span><br><span class="line">for i in `ls $WEB_LOG/$YESTERDAY`</span><br><span class="line">do</span><br><span class="line"><span class="meta">	#</span>20150828</span><br><span class="line">	DATE=$&#123;i:0:8&#125;</span><br><span class="line"><span class="meta">	#</span>18</span><br><span class="line">    HOUR=$&#123;i:8:2&#125;</span><br><span class="line"><span class="meta">  	#</span>上传文件到HDFS</span><br><span class="line">  	echo "======正在上传日志======"</span><br><span class="line"><span class="meta">  	#</span>bin/hdfs /opt/modules/weblog/2015082818 /weblog/20170726</span><br><span class="line"><span class="meta">  	$</span>HADOOP_DIR/bin/hdfs dfs -put $WEB_LOG/$YESTERDAY/$i /weblog/$YESTERDAY</span><br><span class="line"><span class="meta">	#</span>清洗日志</span><br><span class="line">	echo "======开始清洗=========="</span><br><span class="line"><span class="meta">	#</span> bin/yarn jar /home/admin/Desktop/clearlog.jar com.z.hive.etl.LogCleanMapReduce /weblog/20170726/2015082818 /user/hive/warehouse/syllabus.db/track_log/date=20170725/hour=18</span><br><span class="line"><span class="meta">	$</span>HADOOP_DIR/bin/yarn jar /home/admin/Desktop/clearlog.jar com.z.hive.etl.LogCleanMapReduce /weblog/$YESTERDAY/$i /user/hive/warehouse/syllabus.db/track_log/date=$DATE/hour=$HOUR</span><br><span class="line">	echo "======关联清洗后的数据=="</span><br><span class="line"><span class="meta">	$</span>HIVE_DIR/bin/hive \</span><br><span class="line">	--hiveconf LOCATION_NEW=/user/hive/warehouse/syllabus.db/track_log/date=$DATE/hour=$HOUR \</span><br><span class="line">	--hiveconf DATE_NEW=$DATE \</span><br><span class="line">	--hiveconf HOUR_NEW=$HOUR \</span><br><span class="line">	-f $HQL_DIR/alter_table_track_log.hql</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+<p>alter_table_track_log.hql内容如下：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use syllabus;</span><br><span class="line">alter table track_log add partition(date='$&#123;hiveconf:DATE_NEW&#125;', hour='$&#123;hiveconf:HOUR_NEW&#125;') location "$&#123;hiveconf:LOCATION_NEW&#125;"</span><br></pre></td></tr></table></figure></p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/article8/" data-toggle="tooltip" data-placement="top" title="[elasticsearch] elasticsearch环境搭建及工作原理">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#什么是Hive"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">什么是Hive</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#数据建立过程"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">数据建立过程</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#数据源"><span class="toc-nav-number">1.1.1.</span> <span class="toc-nav-text">数据源</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#数据抽取"><span class="toc-nav-number">1.1.2.</span> <span class="toc-nav-text">数据抽取</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#建立双射关系"><span class="toc-nav-number">1.1.3.</span> <span class="toc-nav-text">建立双射关系</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#一条HQL语句如何在Hive的数据仓库中进行查询的？"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">一条HQL语句如何在Hive的数据仓库中进行查询的？</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#hive基本语法"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">hive基本语法</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#创建管理表"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">创建管理表</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#导入数据"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">导入数据</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#创建分区表"><span class="toc-nav-number">3.3.</span> <span class="toc-nav-text">创建分区表</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#执行命令"><span class="toc-nav-number">3.4.</span> <span class="toc-nav-text">执行命令</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#导出数据"><span class="toc-nav-number">3.5.</span> <span class="toc-nav-text">导出数据</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#常用函数"><span class="toc-nav-number">3.6.</span> <span class="toc-nav-text">常用函数</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#内部表与外部表"><span class="toc-nav-number">3.7.</span> <span class="toc-nav-text">内部表与外部表</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#元数据备份与还原"><span class="toc-nav-number">3.8.</span> <span class="toc-nav-text">元数据备份与还原</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#日志清洗案例"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">日志清洗案例</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#hive" title="hive">hive</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2018 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

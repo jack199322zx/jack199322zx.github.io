@@ -140,14 +140,14 @@
 
                         
                         <li>
-                            <a href="/about/">About</a>
+                            <a href="/archive/">Archives</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/archive/">Archives</a>
+                            <a href="/about/">About</a>
                         </li>
                         
                     
@@ -217,7 +217,7 @@
 <p><img src="/img/article/overview.png" alt="overview"></p>
 <h1 id="let’s-begin"><a href="#let’s-begin" class="headerlink" title="let’s begin"></a>let’s begin</h1><p>前提准备：搭建好 node 和 git环境， 准备一个github账号。<br>关于环境搭建可以参考下边的一篇博文，里面已经讲解的比较详细。<br><a href="https://blog.csdn.net/ainuser/article/details/77609180" target="_blank" rel="noopener">https://blog.csdn.net/ainuser/article/details/77609180</a></p>
 <p>安装hexo及部署插件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br><span class="line">npm install hexo-deployer-git --save</span><br><span class="line"><span class="meta">#</span><span class="bash">For more:https://hexo.io/zh-cn/index.html</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br><span class="line">npm install hexo-deployer-git --save</span><br><span class="line"><span class="meta">#</span>For more:https://hexo.io/zh-cn/index.html</span><br></pre></td></tr></table></figure>
 <p>安装完成之后，通过执行以下代码启动hexo本地服务<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hexo init blog</span><br><span class="line">cd /blog</span><br><span class="line">npm install (如果npm下载缓慢可用cnpm淘宝镜像下载)</span><br><span class="line">hexo generate (生成静态页面，默认在public文件夹下)</span><br><span class="line">hexo server (启动服务，默认监听4000端口)</span><br></pre></td></tr></table></figure></p>
 <p>然后我们在浏览器访问localhost:4000，可以看到如下图片，则表示服务启动成功！<br><img src="/img/article/default.png" alt="default"></p>
 <h1 id="then"><a href="#then" class="headerlink" title="then"></a>then</h1><p>登录github账号，创建一个仓库。<br><img src="/img/article/github1.png" alt="github_1"><br>这里需要注意的是，仓库的名称必须是username.github.io<br><img src="/img/article/github2.png" alt="github_2"><br>创建的过程中可能会有些漫长，需要等待一段时间方可访问。<br><img src="/img/article/github3.png" alt="github_3"><br>进入刚创建的仓库，打开Settings，找到github pages<br><img src="/img/article/github4.png" alt="github_4"><br>可以配置自定义域名映射，也就是可以域名解析到阿里云域名等。<br>这里要注意个人网站的代码只能提交到master主分支，且不可修改。否则是无法展示你提交的页面的。</p>
