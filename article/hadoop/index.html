@@ -14,11 +14,11 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <title>
         
-          [Hexo] Hexo建站笔录 - Nino | Blog
+          [大数据] hadoop基础 - Nino | Blog
         
     </title>
 
-    <link rel="canonical" href="http://www.52nino.cn/article/page/">
+    <link rel="canonical" href="http://www.52nino.cn/article/hadoop/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -69,7 +69,7 @@
 <style type="text/css">
     header.intro-header{
         
-            background-image: url('/img/article_header/youshen.jpg')
+            background-image: url('/img/article_header/article_header.png')
             /*post*/
         
     }
@@ -86,14 +86,14 @@
                     <div class="post-heading">
                         <div class="tags">
                             
-                              <a class="tag" href="/tags/#Hexo" title="Hexo">Hexo</a>
+                              <a class="tag" href="/tags/#hadoop" title="hadoop">hadoop</a>
                             
                         </div>
-                        <h1>[Hexo] Hexo建站笔录</h1>
-                        <h2 class="subheading">分享hexo结合github pages建立个人博客的经验</h2>
+                        <h1>[大数据] hadoop基础</h1>
+                        <h2 class="subheading">hadoop入门学习</h2>
                         <span class="meta">
                             Posted by Nino on
-                            2018-10-23
+                            2019-01-20
                         </span>
                     </div>
                 
@@ -210,22 +210,23 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <blockquote>
-<p>你是否也想搭建个人博客？这里教大家一个免费搭建个人博客的方法。</p>
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在如今大数据爆炸的时代，数据的存储和查询变得越来越重要。谈到大数据，不得不提上hadoop，那么hadoop到底是个什么呢？<br>它本质就是一个分布式数据存储与调度系统。hadoop分为1.0和2.0两个大版本，第一个版本的hadoop主要由HDFS（分布式文件系统）和MR（MapReduce）组成。<br>第二个版本由HDFS，MR和YARN组成，后面分析下这两个版本的区别。</p>
+<h1 id="Hadoop组成"><a href="#Hadoop组成" class="headerlink" title="Hadoop组成"></a>Hadoop组成</h1><h2 id="HDFS"><a href="#HDFS" class="headerlink" title="HDFS"></a>HDFS</h2><p>HDFS是一个分布式的文件存储系统，它由namenode和datanode组成。</p>
+<blockquote>
+<p>每个磁盘上都有默认的数据块大小，这是磁盘进行数据读写的最小单位。文件系统中的文件构建于数据块之上，是其整数倍组成。<br>HDFS默认也有块(block)的概念，默认为128MB。hdfs-site.xml中可通过dfs.blocksize属性进行设置。<br>HDFS默认块副本数为3个，为了保障数据的容错能力和高可用。</p>
 </blockquote>
-<h1 id="写在开篇之前"><a href="#写在开篇之前" class="headerlink" title="写在开篇之前"></a>写在开篇之前</h1><p>当你想要搭建个人博客的网站，却为负担昂贵的服务器费用而苦恼，那么本文为您提供了一个解决方案。</p>
-<p><img src="/img/article/overview.png" alt="overview"></p>
-<h1 id="let’s-begin"><a href="#let’s-begin" class="headerlink" title="let’s begin"></a>let’s begin</h1><p>前提准备：搭建好 node 和 git环境， 准备一个github账号。<br>关于环境搭建可以参考下边的一篇博文，里面已经讲解的比较详细。<br><a href="https://blog.csdn.net/ainuser/article/details/77609180" target="_blank" rel="noopener">https://blog.csdn.net/ainuser/article/details/77609180</a></p>
-<p>安装hexo及部署插件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br><span class="line">npm install hexo-deployer-git --save</span><br><span class="line"><span class="meta">#</span>For more:https://hexo.io/zh-cn/index.html</span><br></pre></td></tr></table></figure>
-<p>安装完成之后，通过执行以下代码启动hexo本地服务<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hexo init blog</span><br><span class="line">cd /blog</span><br><span class="line">npm install (如果npm下载缓慢可用cnpm淘宝镜像下载)</span><br><span class="line">hexo generate (生成静态页面，默认在public文件夹下)</span><br><span class="line">hexo server (启动服务，默认监听4000端口)</span><br></pre></td></tr></table></figure></p>
-<p>然后我们在浏览器访问localhost:4000，可以看到如下图片，则表示服务启动成功！<br><img src="/img/article/default.png" alt="default"></p>
-<h1 id="then"><a href="#then" class="headerlink" title="then"></a>then</h1><p>登录github账号，创建一个仓库。<br><img src="/img/article/github1.png" alt="github_1"><br>这里需要注意的是，仓库的名称必须是username.github.io<br><img src="/img/article/github2.png" alt="github_2"><br>创建的过程中可能会有些漫长，需要等待一段时间方可访问。<br><img src="/img/article/github3.png" alt="github_3"><br>进入刚创建的仓库，打开Settings，找到github pages<br><img src="/img/article/github4.png" alt="github_4"><br>可以配置自定义域名映射，也就是可以域名解析到阿里云域名等。<br>这里要注意个人网站的代码只能提交到master主分支，且不可修改。否则是无法展示你提交的页面的。</p>
-<h2 id="github-ssh配置"><a href="#github-ssh配置" class="headerlink" title="github ssh配置"></a>github ssh配置</h2><p>github账号配置完成之后，需要配置ssh，方便hexo的部署。<br>本地通过 ssh-keygen -t rsa -C 邮箱地址<br>创建密匙，最后得到了两个文件：id_rsa（私匙）和id_rsa.pub（公匙）<br>打开id_rsa.pub，将其中的内容复制到github账号的ssh keys设置中。<br>输入ssh -T <a href="mailto:git@github.com" target="_blank" rel="noopener">git@github.com</a>，测试添加ssh是否成功。<br>可以参考另一篇博文<a href="https://www.cnblogs.com/fengxiongZz/p/7707219.html" target="_blank" rel="noopener">https://www.cnblogs.com/fengxiongZz/p/7707219.html</a></p>
-<h1 id="last"><a href="#last" class="headerlink" title="last"></a>last</h1><p>修改_config.yml<br>在deploy下设置repository: ssh://…（你的仓库地址）<br>执行hexo clean, hexo generate, hexo deploy。（以后只要改动了代码，都可以通过这种方式发布）<br>最后访问你的github pages，如zhangsan.github.io，看到最新的页面即发布成功。</p>
-<h2 id="友情提醒"><a href="#友情提醒" class="headerlink" title="友情提醒"></a>友情提醒</h2><p>关于hexo _config.yml文件的配置可以参考<a href="https://www.jianshu.com/p/0fe7dd8a0e8b?winzoom=1" target="_blank" rel="noopener">https://www.jianshu.com/p/0fe7dd8a0e8b?winzoom=1</a><br>关于hexo修改主题可以参考<a href="https://www.jianshu.com/p/33bc0a0a6e90" target="_blank" rel="noopener">https://www.jianshu.com/p/33bc0a0a6e90</a></p>
-<!-- Place this tag in your head or just before your close body tag. -->
-<p><script async defer src="https://buttons.github.io/buttons.js"></script><br><!-- Place this tag where you want the button to render. --></p>
+<h3 id="namenode"><a href="#namenode" class="headerlink" title="namenode"></a>namenode</h3><p>namenode为HDFS的管理节点，该节点上存储了文件系统的命名空间。维护着整棵文件系统树内所有文件和目录。<br>这些信息以命名空间镜像文件(fsimage)和编辑日志文件（edits file）的方式永久保存起来。同时namenode也记录着每个文件块所在的datanode信息。</p>
+<h3 id="datanode"><a href="#datanode" class="headerlink" title="datanode"></a>datanode</h3><p>datanode为HDFS的工作节点，主要负责存储和检索数据块，并且定期向namenode发送他们所存储块的列表。</p>
+<h2 id="抛出疑问1"><a href="#抛出疑问1" class="headerlink" title="抛出疑问1"></a>抛出疑问1</h2><p>HDFS中的块为什么那么大？</p>
+<h2 id="解答"><a href="#解答" class="headerlink" title="解答"></a>解答</h2><p>为了最小化寻址开销。如果块足够大，从磁盘传输数据的时间会明显大于定位这个块的开始位置所需时间，所以磁盘传输速率越快寻址开销越小。</p>
+<h2 id="抛出疑问2"><a href="#抛出疑问2" class="headerlink" title="抛出疑问2"></a>抛出疑问2</h2><p>namenode挂掉了怎么办？</p>
+<h2 id="解答-1"><a href="#解答-1" class="headerlink" title="解答"></a>解答</h2><p>没有namenode，整个文件系统将会无法使用，因此namenode实现容错相当重要。<br>在hadoop1.0版本中，有secondary-namenode机制，该节点为辅助节点，它的作用是定期合并edits file和fsimage镜像文件，防止编辑日志文件过大。<br>它会保存fsimage的副本，以便namenode发生故障时启用。那么问题又来了，secondary-namenode保存的状态总是滞后于namenode，所以namenode失效时，<br>难免还是会发生数据丢失。那么怎么办呢？于是乎hadoop2.0版本提供了新的解决方案，hadoop-HA了解一下。<br>在hadoop2.0版本中，可以拥有两个namenode，一个是active，一个是standy，两者的状态是可以切换的，但只能有一个active状态，datanode同时向两个namenode节点发送数据块处理报告。<br>一种方式是namenode之间通过NFS（Network File System）共享数据，active namenode会把最近的edits文件写到NFS，而standby namenode从NFS中把数据读过来。<br>这个方式的缺点是，如果active namenode或者standby namenode有一个和NFS之间网络有问题，则会造成他们之前数据的同步出问题。<br>第二种方式是namenode之间通过一组奇数个数的journalnode日志节点来共享数据，active namenode把最近的edits文件写到2n+1个journalnode上，只要有n+1个写入成功就认为这次写入操作成功了，然后standby namenode就可以从journalnode上读取了，<br>这种方式提供了一定容错。</p>
+<h3 id="故障检测与故障转移"><a href="#故障检测与故障转移" class="headerlink" title="故障检测与故障转移"></a>故障检测与故障转移</h3><p><img src="/img/article/hadoop-ha.jpg" alt="prepare"><br>故障检测依赖于ZKFC，即Zookeeper FailoverController，该组件监控namenode节点的状态，定期向ZK发送心跳，使自己可以被选举，当自己被选举为主时，<br>通过RPC调用使其对应的namenode转换为active。那么RPC调用失败了咋办？其实也没事，失败了会再次尝试调用直至成功。<br>注意active的namenode是真正的管理节点，只有它可以发出命令datanode，只有一个activen namenode能响应客户端请求。</p>
+<h2 id="MapReduce"><a href="#MapReduce" class="headerlink" title="MapReduce"></a>MapReduce</h2><p>MR是google提出的一种分布式计算抽象思想，在hadoop1.0版本中，运行时环境由JobTracker和TaskTracker组成，JobTracker负责资源管理和所有作业的控制，TaskTracker负责接收来自JobTracker的命令并执行。<br>那么这么做的缺陷是什么呢？JobTracker负责了太多的东西，扩展性不足，它承受了这个年纪不该承受的压力啊，哈哈，扯多了。<br>于是乎，2.0版本出来一个YARN，将JobTracker中的资源管理和作业控制功能分开，分别由两个不同进程ResourceManager和ApplicationMaster实现，ResourceManager负责所有应用程序的资源分配，Application负责管理一个应用程序。<br>MR的执行过程可以参考：<a href="https://www.cnblogs.com/laowangc/p/8961946.html" target="_blank" rel="noopener">https://www.cnblogs.com/laowangc/p/8961946.html</a></p>
+<h2 id="YARN"><a href="#YARN" class="headerlink" title="YARN"></a>YARN</h2><p>Yarn作为Hadoop2.0中的资源管理系统，它是一个通用的资源管理模块，可为各类应用程序进行资源管理和调度，不仅限于MapReduce一种框架，也可以为其他框架使用，如Tez、Spark、Storm等。<br>运行在独立的节点上的ResourceManager和NodeManager一起组成了yarn的核心，构建了整个平台。ApplicationMaster和相应的container一起组成了一个Yarn的应用系统。<br>ResourceManager提供应用程序的调度，每个应用程序由一个ApplicationMaster管理，以Container的形式请求每个任务的计算资源。Container由ResourceManagaer调度，由每个节点的NodeManager上进行本地的管理。<br>NodeManager发送心跳给ResourceManager，ResourceManager的该组件负责相应来自所有节点的RPC。</p>
+<p>整个作业大体总体运行流程：</p>
+<p>1、应用程序提交给ResourceManager。<br>2、ApplicationMaster启动，并向ResourceManager注册。<br>3、ApplicationMaster向ResourceManager请求Container执行实际的工作。<br>4、ApplicationMaster将从ResourceManager分配的Container信息(包括各种资源配置啊等信息）传递给NodeManager启动。<br>5、随之，计算过程在Container中进行，这些Container将与ApplicationMaster保持通信，发送心跳等告知任务过程。<br>6、当应用程序完成后，Container被停止，ApplicationMaster从ResourceManager中注销。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.2cto.com/database/201709/677231.html" target="_blank" rel="noopener">https://www.2cto.com/database/201709/677231.html</a></p>
 
                 
 
@@ -233,13 +234,9 @@
                 <!-- Pager -->
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/article/article1/" data-toggle="tooltip" data-placement="top" title="[java基础] 类加载机制">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/article/blog/" data-toggle="tooltip" data-placement="top" title="[随笔] welcome to my blog">Next Post &rarr;</a>
+                            <a href="/article/hive/" data-toggle="tooltip" data-placement="top" title="[大数据] hive基础">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -274,7 +271,7 @@
         <div id="toc" class="toc-article">
         <strong class="toc-title">Contents</strong>
         
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#写在开篇之前"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">写在开篇之前</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#let’s-begin"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">let’s begin</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#then"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">then</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#github-ssh配置"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">github ssh配置</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#last"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">last</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#友情提醒"><span class="toc-nav-number">4.1.</span> <span class="toc-nav-text">友情提醒</span></a></li></ol></li></ol>
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#前言"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#Hadoop组成"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">Hadoop组成</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HDFS"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">HDFS</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#namenode"><span class="toc-nav-number">2.1.1.</span> <span class="toc-nav-text">namenode</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#datanode"><span class="toc-nav-number">2.1.2.</span> <span class="toc-nav-text">datanode</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#抛出疑问1"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">抛出疑问1</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#解答"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">解答</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#抛出疑问2"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">抛出疑问2</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#解答-1"><span class="toc-nav-number">2.5.</span> <span class="toc-nav-text">解答</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#故障检测与故障转移"><span class="toc-nav-number">2.5.1.</span> <span class="toc-nav-text">故障检测与故障转移</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#MapReduce"><span class="toc-nav-number">2.6.</span> <span class="toc-nav-text">MapReduce</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#YARN"><span class="toc-nav-number">2.7.</span> <span class="toc-nav-text">YARN</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#参考"><span class="toc-nav-number">2.8.</span> <span class="toc-nav-text">参考</span></a></li></ol></li></ol>
         
         </div>
       </aside>
@@ -294,7 +291,7 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#Hexo" title="Hexo">Hexo</a>
+                          <a class="tag" href="/tags/#hadoop" title="hadoop">hadoop</a>
                         
                     </div>
                 </section>
