@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          [spring] springboot源码解析 - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/springboot/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#springboot" title="springboot">springboot</a>
+                            
+                        </div>
+                        <h1>[spring] springboot源码解析</h1>
+                        <h2 class="subheading">关于springboot源码，分享一些心得</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2019-01-26
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><h2 id="什么是微服务架构？"><a href="#什么是微服务架构？" class="headerlink" title="什么是微服务架构？"></a>什么是微服务架构？</h2><blockquote>
+<p>微服务架构是面向SOA、面向服务的架构，是一种将单应用程序作为独立部署的套件的架构方式。其特点是轻量级、可扩展性高、部署发布方便。</p>
+</blockquote>
+<p><img src="/img/article/springboot/springboot1.png" alt="springboot1"></p>
+<blockquote>
+<p>在微服务架构演变中，应用程序应当将按业务进行拆分，把共用部分独立出来，例如SSO单点登陆、图片服务（裁图、传图、压缩、打码）、第三方服务（对接腾讯、阿里）、邮件服务、短信服务、会员服务、商品服务等。</p>
+</blockquote>
+<blockquote>
+<p>举一个典型的例子，A应用程序中需要用到传图裁图的业务逻辑，这个时候开发者将裁图传图的代码逻辑写在了A应用程序中，之后B应用程序也需要用到裁图，虽然逻辑可能有些不同，但大部分是可以共用A中的裁图部分的，因此这部分业务应当独立拆分出来作为一个单独的图片服务程序，A和B对图片处理的不同只需要实现不同的一个处理接口即可。</p>
+</blockquote>
+<blockquote>
+<p>这样做带来的好处，业务之间的耦合度降低、扩展性增强、部署方便。但同时带来的是分布式事务的管理困难、业务人员排查问题难度增加。因此在实际应用当中当权衡利弊将业务进行拆分。</p>
+</blockquote>
+<h1 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h1><p>从启动类开始，分析一下@SpringBootApplication这个注解<br><img src="/img/article/springboot/springboot2.png" alt="springboot2"><br><img src="/img/article/springboot/springboot3.png" alt="springboot3"><br><img src="/img/article/springboot/springboot4.png" alt="springboot4"><br><img src="/img/article/springboot/springboot5.png" alt="springboot5"></p>
+<p>接下来，核心分析一下@EnableAutoConfiguration这个注解。<br><img src="/img/article/springboot/springboot6.png" alt="springboot6"><br><img src="/img/article/springboot/springboot7.png" alt="springboot7"><br>下面看一下AutoConfigurationImportSelector这个类的核心方法<br><img src="/img/article/springboot/springboot8.png" alt="springboot8"><br><img src="/img/article/springboot/springboot9.png" alt="springboot9"><br>接下来看一下@AutoConfigurationPackage这个注解<br><img src="/img/article/springboot/springboot10.png" alt="springboot10"><br><img src="/img/article/springboot/springboot11.png" alt="springboot11"><br>过了一遍@SpringBootApplication注解之后，将各个关键方法标注上断点，再回到启动类上。开启愉快的debug之旅：<br><img src="/img/article/springboot/springboot12.png" alt="springboot12"><br><img src="/img/article/springboot/springboot13.png" alt="springboot13"><br>这里由SpringApplication构造方法进入到getSpringFactoriesInstances -&gt; SpringFactoriesLoader.loadFactoryNames(type, classLoader) -&gt; loadSpringFactories -&gt; loadSpringFactories<br><img src="/img/article/springboot/springboot14.png" alt="springboot14"><br><img src="/img/article/springboot/springboot15.png" alt="springboot15"><br>在windows系统上，这里url的值是jar:file:/C:/Users/Administrator/.m2/repository/org/springframework/boot/spring-boot/2.1.2.RELEASE/spring-boot-2.1.2.RELEASE.jar!/META-INF/spring.factories，<br>打开这个文件，来瞄一眼里面写的是啥，于是乎：<br><img src="/img/article/springboot/springboot16.png" alt="springboot16"><br>loadSpringFactories返回的result为：<br><img src="/img/article/springboot/springboot17.png" alt="springboot17"><br><img src="/img/article/springboot/springboot18.png" alt="springboot18"><br><img src="/img/article/springboot/springboot19.png" alt="springboot19"><br><img src="/img/article/springboot/springboot20.png" alt="springboot20"><br>返回的names如上，接下来进入createSpringFactoriesInstances方法。<br><img src="/img/article/springboot/springboot21.png" alt="springboot21"><br>这里其实就是遍历调用反射通过构造器实例化传入的6个spring内置组件，它们都是ApplicationContextInitializer的实现类。<br><img src="/img/article/springboot/springboot22.png" alt="springboot22"><br><img src="/img/article/springboot/springboot23.png" alt="springboot23"><br>同样的方式，setListeners也是创建了10个ApplicationListener的实现类。<br>于是乎，经过千辛万苦，我们终于走过了SpringApplication的构造方法，来到了最核心的真正的启动类。看一下getRunListners方法<br><img src="/img/article/springboot/springboot24.png" alt="springboot24"><br><img src="/img/article/springboot/springboot25.png" alt="springboot25"><br>又回到了熟悉的场景，getSpringFactoriesInstances，获取SpringApplicationRunListener类型的内置组件，其名曰EventPublishingRunListener，它里面包含了一个事件发布广播器SimpleApplicationEventMulticaster。<br><img src="/img/article/springboot/springboot26.png" alt="springboot26"><br><img src="/img/article/springboot/springboot27.png" alt="springboot27"><br>拿到listners之后，调用listeners.starting()，如下<br><img src="/img/article/springboot/springboot28.png" alt="springboot28"><br>其实就是遍历之前拿到的SpringApplicationRunListeners，调用starting方法，最终会调用之前创造的事件广播器派发事件，有兴趣可以参考下spring事件驱动，有关于事件派发的部分，这里就不再分析。<br><img src="/img/article/springboot/springboot29.png" alt="springboot29"><br>（PS：上面这个图形打印在SpringApplicationBannerPrinter的print方法）<br><img src="/img/article/springboot/springboot30.png" alt="springboot30"><br>回到run()方法，上面三行代码是对环境的初始化，以及准备事件的发布等。<br>接下来到了创建上下文AnnotationConfigApplicationContext及exceptionReporters，springboot中默认上下文是创建AnnotationConfigApplicationContext。<br><img src="/img/article/springboot/springboot31.png" alt="springboot31"><br>注意createApplicationContext，创建上下文的过程中，初始化了两个bean对象，一个是AnnotatedBeanDefinitionReader，另一个是ClassPathBeanDefinitionScanner。其中AnnotatedBeanDefinitionReader（）-&gt;<br>AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry) -&gt;<br>registerAnnotationConfigProcessors -&gt; registry.registerBeanDefinition(beanName, definition)创建了beanFactory中内置的几个组件。<br>具体可参见AnnotationConfigUtils的registerAnnotationConfigProcessors方法<br><img src="/img/article/springboot/springboot32.png" alt="springboot32"><br><img src="/img/article/springboot/springboot33.png" alt="springboot33"><br>进入到applyInitializers(context)：<br><img src="/img/article/springboot/springboot34.png" alt="springboot34"><br>这里其实就是拿到刚开始创建的6个ApplicationContextInitializer的实现类，遍历调用initialize方法。比如SharedMetadataReaderFactoryContextInitializer向容器中注册了CachingMetadataReaderFactoryPostProcessor这个BeanFactory后置处理器等，有兴趣可以看下，这里不再赘述。<br><img src="/img/article/springboot/springboot35.png" alt="springboot35"><br>接下来创建DefaultListableBeanFactory，注册一些bean的定义信息，放在manualSingletonNames属性中。<br><img src="/img/article/springboot/springboot36.png" alt="springboot36"><br><img src="/img/article/springboot/springboot37.png" alt="springboot37"><br>接下来我们终于来到了大BOSS关卡最后一关，refreshContext()方法<br><img src="/img/article/springboot/springboot38.png" alt="springboot38"><br>看到这段代码熟悉吗？如果看过spring源码的同胞，应该知道这里AnnotationConfigApplicationContext启动类的核心方法。<br>接下来，回到我们最初看到的@SpringBootApplication注解，其中的AutoConfigurationImportSelector。当refresh() -&gt; invokeBeanFactoryPostProcessors -&gt;<br><img src="/img/article/springboot/springboot39.png" alt="springboot39"><br><img src="/img/article/springboot/springboot40.png" alt="springboot40"><br>这里注册了的BeanFactory后置处理器有三个，还记得吗，其中两个是遍历ApplicationContextInitializer的initialize方法添加的。<br>PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors()) -&gt; invokeBeanDefinitionRegistryPostProcessors -&gt; postProcessor.postProcessBeanDefinitionRegistry(registry) -&gt;processConfigBeanDefinitions(registry) -&gt; parser.parse(candidates) -&gt;DeferredImportSelectorHandler.process() -&gt;deferredImports.forEach(handler::register) -&gt;deferredImport.getImportSelector().getImportGroup() -&gt;<br>终于，调用了我们之前看到的方法AutoConfigurationImportSelector的getImportGroup方法，紧接着调用完deferredImports.forEach(handler::register) -&gt;<br>handler.processGroupImports() -&gt; grouping.getImports().forEach(entry -&gt; {…}) -&gt;<br>DeferredImportSelector.Group.process()，进入到AutoConfigurationImportSelector的process方法<br><img src="/img/article/springboot/springboot41.png" alt="springboot41"><br>分析一下process方法，这个方法通过调用((AutoConfigurationImportSelector) deferredImportSelector).getAutoConfigurationEntry(getAutoConfigurationMetadata(), annotationMetadata)。<br>PS:(ConfigurationClassPostProcessor是用来处理@Configuration的后置处理器)<br><img src="/img/article/springboot/springboot42.png" alt="springboot42"><br><img src="/img/article/springboot/springboot43.png" alt="springboot43"><br><img src="/img/article/springboot/springboot44.png" alt="springboot44"><br>AutoConfigurationMetadataLoader从META-INF/spring-autoconfigure-metadata.properties中读取自动注入的配置信息，可以看到条数多达680条<br><img src="/img/article/springboot/springboot45.png" alt="springboot45"><br><img src="/img/article/springboot/springboot46.png" alt="springboot46"><br>之后进入getAutoConfigurationEntry方法，读取@SpringBootApplication注解元信息，经过一系列排除、去重、筛选出剩下需要自动注入的组件，最终拿到了9个需要自动注入的类。<br><img src="/img/article/springboot/springboot47.png" alt="springboot47"><br><img src="/img/article/springboot/springboot48.png" alt="springboot48"><br>将需要注入的组件进行了一层包装，并存放在entries中。最终selectImports()方法返回如下<br><img src="/img/article/springboot/springboot49.png" alt="springboot49"><br>同理，AutoConfigurationPackages.Registrar的registerBeanDefinitions，determineImports，也是向容器中注册默认的组件。最终经过invokeBeanFactoryPostProcessors得到的组件如下：<br><img src="/img/article/springboot/springboot50.png" alt="springboot50"><br>总结以上，SpringBoot通过@EnableAutoConfiguration实现内置组件的自动注入，先是通过在META-INF/spring.factories文件中读取ApplicationContextInitializer和ApplicationListener的实现类信息，并通过反射实例化这些组件，分别存放在SpringApplication类中的initializers和listeners字段。之后遍历调用initializers的initialize方法，向容器中添加了两个BeanFactoryPostProcessor，还添加了一些listener以及ContextId，比如SharedMetadataReaderFactoryContextInitializer在initialize时向容器中添加了CachingMetadataReaderFactoryPostProcessor，在容器invokeBeanFactoryPostProcesor时会向容器中注册相关的组件。再之后读取META-INF/spring-autoconfigure-metadata.properties文件中自动配置的类，读出来680条是springboot集成其他框架的支持类，经过去重、排除、筛选，得到最终的内置组件。</p>
+<h1 id="springboot扩展"><a href="#springboot扩展" class="headerlink" title="springboot扩展"></a>springboot扩展</h1><h2 id="Spring后置处理器总结："><a href="#Spring后置处理器总结：" class="headerlink" title="Spring后置处理器总结："></a>Spring后置处理器总结：</h2><p>Spring中的后置处理器分为两个大类，一个是BeanFactoryPostProcessors，一个是BeanPostProcessors。前者在invokeBeanFactoryPostProcessors阶段执行，后者在registerBeanPostProcessors阶段注册并完成实例化，Spring在finishBeanFactoryInitialization阶段会完成所有非懒加载对象的创建，BeanPostProcessors拦截对象创建的过程。</p>
+<p>BeanPostProcessors具体可分为以下几种类型：</p>
+<p>1.InstantiationAwareBeanPostProcessor -&gt; 作用于AbstractAutowireCapableBeanFactory的resolveBeforeInstantiation时，在Bean实例化之前执行postProcessBeforeInstantiation，并且如果该方法返回了对象，将会执行所有BeanPostProcessors的postProcessAfterInitialization方法，最后直接返回代理对象。如果没有返回代理对象，则会在populateBean阶段调用postProcessAfterInstantiation，进而调用postProcessProperties，postProcessPropertyValues。populateBean阶段之后会进入initializeBean阶段，会调用所有BeanPostProcessors的postProcessBeforeInitialization，之后会执行invokeInitMethods，随后执行所有BeanPostProcessors的postProcessAfterInitialization。</p>
+<p>2.MergedBeanDefinitionPostProcessor -&gt; 作用于AbstractAutowireCapableBeanFactory的doCreateBean阶段，会调用postProcessMergedBeanDefinition方法。</p>
+<p>3.DestructionAwareBeanPostProcessor -&gt; 作用于Bean的destroy销毁阶段。</p>
+<p>其中，InstantiationAwareBeanPostProcessor 其下有子接口SmartInstantiationAwareBeanPostProcessor。<br>SmartInstantiationAwareBeanPostProcessor分别作用于createBeanInstance -&gt; determineConstructorsFromBeanPostProcessors阶段，preInstantiateSingletons -&gt; isFactoryBean -&gt; predictBeanType，doCreateBean -&gt; addSingletonFactory -&gt; getEarlyBeanReference。</p>
+<blockquote>
+<p>举个例子，CommonAnnotationBeanPostProcessor中包含了对@Resource，@PostConstruct，@PreDestroy的处理，它扩展自InstantiationAwareBeanPostProcessor，InitDestroyAnnotationBeanPostProcessor</p>
+</blockquote>
+<p><img src="/img/article/springboot/springboot51.png" alt="springboot51"><br><img src="/img/article/springboot/springboot52.png" alt="springboot52"></p>
+<blockquote>
+<p>再比如，AutowiredAnnotationBeanPostProcessor是@Autowired，@Value注解的支持，它扩展自InstantiationAwareBeanPostProcessor，MergedBeanDefinitionPostProcessor </p>
+</blockquote>
+<p><img src="/img/article/springboot/springboot53.png" alt="springboot53"></p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/hadoop/" data-toggle="tooltip" data-placement="top" title="[大数据] hadoop基础">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#前言"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#什么是微服务架构？"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">什么是微服务架构？</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#源码解析"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">源码解析</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#springboot扩展"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">springboot扩展</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Spring后置处理器总结："><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">Spring后置处理器总结：</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#springboot" title="springboot">springboot</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2019 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

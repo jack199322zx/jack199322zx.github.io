@@ -196,17 +196,19 @@
             <!-- 标签云 -->
             <div id="tag_cloud" class="tags">
                 
-                    <a href="#spring" title="spring" rel="5">spring</a>
-                
                     <a href="#java基础" title="java基础" rel="1">java基础</a>
                 
-                    <a href="#vmvare" title="vmvare" rel="1">vmvare</a>
+                    <a href="#spring" title="spring" rel="5">spring</a>
                 
                     <a href="#随笔" title="随笔" rel="1">随笔</a>
+                
+                    <a href="#vmvare" title="vmvare" rel="1">vmvare</a>
                 
                     <a href="#hadoop" title="hadoop" rel="1">hadoop</a>
                 
                     <a href="#elasticsearch" title="elasticsearch" rel="1">elasticsearch</a>
+                
+                    <a href="#springboot" title="springboot" rel="1">springboot</a>
                 
                     <a href="#hive" title="hive" rel="1">hive</a>
                 
@@ -216,6 +218,32 @@
 
             <!-- 标签列表 -->
 
+            
+            <div class="one-tag-list">
+                <span class="fa fa-tag listing-seperator" id="java基础">
+                    <span class="tag-text">java基础</span>
+                </span>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
+                     <a href="/article/article1/">
+                        <h2 class="post-title">
+                            [java基础] 类加载机制
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                关于类加载机制的探讨，分享一些心得
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
+                
+            </div>
             
             <div class="one-tag-list">
                 <span class="fa fa-tag listing-seperator" id="spring">
@@ -234,25 +262,6 @@
                         
                             <h3 class="post-subtitle">
                                 关于spring源码bean创建过程，分享一些心得
-                            </h3>
-                        
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </div>
-                <hr>
-                
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <div class="post-preview">
-                     <a href="/article/article4/">
-                        <h2 class="post-title">
-                            [spring] spring源码解析（IOC/DI）
-                        </h2>
-                        
-                            <h3 class="post-subtitle">
-                                控制反转/依赖注入的实现原理
                             </h3>
                         
                     </a>
@@ -303,6 +312,25 @@
                   <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
                   </li> -->
                  <div class="post-preview">
+                     <a href="/article/article4/">
+                        <h2 class="post-title">
+                            [spring] spring源码解析（IOC/DI）
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                控制反转/依赖注入的实现原理
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
                      <a href="/article/article6/">
                         <h2 class="post-title">
                             [spring] spring异步原理和事件驱动（@Async and ApplicationListener）
@@ -310,58 +338,6 @@
                         
                             <h3 class="post-subtitle">
                                 spring异步原理，事件驱动原理分析
-                            </h3>
-                        
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </div>
-                <hr>
-                
-            </div>
-            
-            <div class="one-tag-list">
-                <span class="fa fa-tag listing-seperator" id="java基础">
-                    <span class="tag-text">java基础</span>
-                </span>
-                
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <div class="post-preview">
-                     <a href="/article/article1/">
-                        <h2 class="post-title">
-                            [java基础] 类加载机制
-                        </h2>
-                        
-                            <h3 class="post-subtitle">
-                                关于类加载机制的探讨，分享一些心得
-                            </h3>
-                        
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </div>
-                <hr>
-                
-            </div>
-            
-            <div class="one-tag-list">
-                <span class="fa fa-tag listing-seperator" id="vmvare">
-                    <span class="tag-text">vmvare</span>
-                </span>
-                
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <div class="post-preview">
-                     <a href="/article/article7/">
-                        <h2 class="post-title">
-                            [vmvare] vmvare搭建分布式环境
-                        </h2>
-                        
-                            <h3 class="post-subtitle">
-                                vmvare踩坑之路
                             </h3>
                         
                     </a>
@@ -388,6 +364,32 @@
                         
                             <h3 class="post-subtitle">
                                 thanks for your coming
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
+                
+            </div>
+            
+            <div class="one-tag-list">
+                <span class="fa fa-tag listing-seperator" id="vmvare">
+                    <span class="tag-text">vmvare</span>
+                </span>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
+                     <a href="/article/article7/">
+                        <h2 class="post-title">
+                            [vmvare] vmvare搭建分布式环境
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                vmvare踩坑之路
                             </h3>
                         
                     </a>
@@ -450,6 +452,32 @@
             </div>
             
             <div class="one-tag-list">
+                <span class="fa fa-tag listing-seperator" id="springboot">
+                    <span class="tag-text">springboot</span>
+                </span>
+                
+                  <!-- <li class="listing-item">
+                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
+                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+                  </li> -->
+                 <div class="post-preview">
+                     <a href="/article/springboot/">
+                        <h2 class="post-title">
+                            [spring] springboot源码解析
+                        </h2>
+                        
+                            <h3 class="post-subtitle">
+                                关于springboot源码，分享一些心得
+                            </h3>
+                        
+                    </a>
+                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
+                </div>
+                <hr>
+                
+            </div>
+            
+            <div class="one-tag-list">
                 <span class="fa fa-tag listing-seperator" id="hive">
                     <span class="tag-text">hive</span>
                 </span>
@@ -485,13 +513,13 @@
                   <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
                   </li> -->
                  <div class="post-preview">
-                     <a href="/article/page/">
+                     <a href="/article/theme/">
                         <h2 class="post-title">
-                            [Hexo] Hexo建站笔录
+                            [Hexo] Theme Nino
                         </h2>
                         
                             <h3 class="post-subtitle">
-                                分享hexo结合github pages建立个人博客的经验
+                                This is hexo theme Demo.
                             </h3>
                         
                     </a>
@@ -504,13 +532,13 @@
                   <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
                   </li> -->
                  <div class="post-preview">
-                     <a href="/article/theme/">
+                     <a href="/article/page/">
                         <h2 class="post-title">
-                            [Hexo] Theme Nino
+                            [Hexo] Hexo建站笔录
                         </h2>
                         
                             <h3 class="post-subtitle">
-                                This is hexo theme Demo.
+                                分享hexo结合github pages建立个人博客的经验
                             </h3>
                         
                     </a>
