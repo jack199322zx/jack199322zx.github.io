@@ -14,11 +14,11 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <title>
         
-          [Hexo] Hexo建站笔录 - Nino | Blog
+          [大数据] HBase基础 - Nino | Blog
         
     </title>
 
-    <link rel="canonical" href="http://www.52nino.cn/article/page/">
+    <link rel="canonical" href="http://www.52nino.cn/article/hbase/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -69,7 +69,7 @@
 <style type="text/css">
     header.intro-header{
         
-            background-image: url('/img/article_header/youshen.jpg')
+            background-image: url('/img/article_header/article_header.png')
             /*post*/
         
     }
@@ -86,14 +86,14 @@
                     <div class="post-heading">
                         <div class="tags">
                             
-                              <a class="tag" href="/tags/#Hexo" title="Hexo">Hexo</a>
+                              <a class="tag" href="/tags/#HBase" title="HBase">HBase</a>
                             
                         </div>
-                        <h1>[Hexo] Hexo建站笔录</h1>
-                        <h2 class="subheading">分享hexo结合github pages建立个人博客的经验</h2>
+                        <h1>[大数据] HBase基础</h1>
+                        <h2 class="subheading">HBase入门学习</h2>
                         <span class="meta">
                             Posted by Nino on
-                            2018-10-23
+                            2019-01-27
                         </span>
                     </div>
                 
@@ -210,22 +210,31 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <blockquote>
-<p>你是否也想搭建个人博客？这里教大家一个免费搭建个人博客的方法。</p>
+                <h1 id="什么是HBase"><a href="#什么是HBase" class="headerlink" title="什么是HBase"></a>什么是HBase</h1><p>HBase是一个分布式的、面向列的非关系型（NoSQL）数据库，它利用Hadoop HDFS作为其文件存储系统，HBase是Google BigTable的开源实现，它利用Zookeeper作为分布式协调服务，同时在Zookeeper中存储相关Hbase节点信息。<br>HBase具有自动分区、高容错、高扩展性的特点，底层基于LSM树架构，通常在高并发实时读写、随机访问大规模数据集时使用。</p>
+<h1 id="HBase存储结构"><a href="#HBase存储结构" class="headerlink" title="HBase存储结构"></a>HBase存储结构</h1><p><img src="/img/article/hbase1.png" alt="prepare"></p>
+<h2 id="HMaster"><a href="#HMaster" class="headerlink" title="HMaster"></a>HMaster</h2><blockquote>
+<p>1.为HRegionServer分配HRegion<br>2.负责HRegionServer的负载均衡<br>3.发现失效的HRegionServer并重新分配<br>4.处理Schema更新请求</p>
 </blockquote>
-<h1 id="写在开篇之前"><a href="#写在开篇之前" class="headerlink" title="写在开篇之前"></a>写在开篇之前</h1><p>当你想要搭建个人博客的网站，却为负担昂贵的服务器费用而苦恼，那么本文为您提供了一个解决方案。</p>
-<p><img src="/img/article/overview.png" alt="overview"></p>
-<h1 id="let’s-begin"><a href="#let’s-begin" class="headerlink" title="let’s begin"></a>let’s begin</h1><p>前提准备：搭建好 node 和 git环境， 准备一个github账号。<br>关于环境搭建可以参考下边的一篇博文，里面已经讲解的比较详细。<br><a href="https://blog.csdn.net/ainuser/article/details/77609180" target="_blank" rel="noopener">https://blog.csdn.net/ainuser/article/details/77609180</a></p>
-<p>安装hexo及部署插件</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br><span class="line">npm install hexo-deployer-git --save</span><br><span class="line"><span class="meta">#</span>For more:https://hexo.io/zh-cn/index.html</span><br></pre></td></tr></table></figure>
-<p>安装完成之后，通过执行以下代码启动hexo本地服务<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hexo init blog</span><br><span class="line">cd /blog</span><br><span class="line">npm install (如果npm下载缓慢可用cnpm淘宝镜像下载)</span><br><span class="line">hexo generate (生成静态页面，默认在public文件夹下)</span><br><span class="line">hexo server (启动服务，默认监听4000端口)</span><br></pre></td></tr></table></figure></p>
-<p>然后我们在浏览器访问localhost:4000，可以看到如下图片，则表示服务启动成功！<br><img src="/img/article/default.png" alt="default"></p>
-<h1 id="then"><a href="#then" class="headerlink" title="then"></a>then</h1><p>登录github账号，创建一个仓库。<br><img src="/img/article/github1.png" alt="github_1"><br>这里需要注意的是，仓库的名称必须是username.github.io<br><img src="/img/article/github2.png" alt="github_2"><br>创建的过程中可能会有些漫长，需要等待一段时间方可访问。<br><img src="/img/article/github3.png" alt="github_3"><br>进入刚创建的仓库，打开Settings，找到github pages<br><img src="/img/article/github4.png" alt="github_4"><br>可以配置自定义域名映射，也就是可以域名解析到阿里云域名等。<br>这里要注意个人网站的代码只能提交到master主分支，且不可修改。否则是无法展示你提交的页面的。</p>
-<h2 id="github-ssh配置"><a href="#github-ssh配置" class="headerlink" title="github ssh配置"></a>github ssh配置</h2><p>github账号配置完成之后，需要配置ssh，方便hexo的部署。<br>本地通过 ssh-keygen -t rsa -C 邮箱地址<br>创建密匙，最后得到了两个文件：id_rsa（私匙）和id_rsa.pub（公匙）<br>打开id_rsa.pub，将其中的内容复制到github账号的ssh keys设置中。<br>输入ssh -T <a href="mailto:git@github.com" target="_blank" rel="noopener">git@github.com</a>，测试添加ssh是否成功。<br>可以参考另一篇博文<a href="https://www.cnblogs.com/fengxiongZz/p/7707219.html" target="_blank" rel="noopener">https://www.cnblogs.com/fengxiongZz/p/7707219.html</a></p>
-<h1 id="last"><a href="#last" class="headerlink" title="last"></a>last</h1><p>修改_config.yml<br>在deploy下设置repository: ssh://…（你的仓库地址）<br>执行hexo clean, hexo generate, hexo deploy。（以后只要改动了代码，都可以通过这种方式发布）<br>最后访问你的github pages，如zhangsan.github.io，看到最新的页面即发布成功。</p>
-<h2 id="友情提醒"><a href="#友情提醒" class="headerlink" title="友情提醒"></a>友情提醒</h2><p>关于hexo _config.yml文件的配置可以参考<a href="https://www.jianshu.com/p/0fe7dd8a0e8b?winzoom=1" target="_blank" rel="noopener">https://www.jianshu.com/p/0fe7dd8a0e8b?winzoom=1</a><br>关于hexo修改主题可以参考<a href="https://www.jianshu.com/p/33bc0a0a6e90" target="_blank" rel="noopener">https://www.jianshu.com/p/33bc0a0a6e90</a></p>
-<!-- Place this tag in your head or just before your close body tag. -->
-<p><script async defer src="https://buttons.github.io/buttons.js"></script><br><!-- Place this tag where you want the button to render. --></p>
+<h2 id="HRegionServer"><a href="#HRegionServer" class="headerlink" title="HRegionServer"></a>HRegionServer</h2><blockquote>
+<p>1.维护HMaster分配给它的HRegion，处理对这些HRegion的IO请求(数据读写)<br>2.负责切分过大的HRegion</p>
+</blockquote>
+<p>HRegionServer内部管理了多个HRegion对象，HBase中一张表可对应多个HRegion，当HRegion的数据量达到一个阈值（默认256M）时就会分成两个新的region。</p>
+<h2 id="HRegion"><a href="#HRegion" class="headerlink" title="HRegion"></a>HRegion</h2><p>HRegion是HBase真正存储数据的地方，表的每个列簇创建对应一个Store对象，与之对应的还有MemStore（内存中）。</p>
+<h2 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h2><p>每一个HRegion由一个或多个Store组成。<br>Store由两部分组成，一部分是MemStore，一部分是StoreFiles。<br>MemStore是Sorted Memory Buffer，用户写入的数据首先会放入MemStore，当MemStore满了以后会Flush成一个StoreFile（底层实现是HFile），当StoreFile文件数量增长到一定阈值，会触发Compact合并操作，将多个StoreFiles合并成一个StoreFile，合并过程中会进行版本合并和数据删除，这使得用户的写操作只要进入内存中就可以立即返回，保证了HBase I/O的高性能。<br>当StoreFiles Compact后，会逐步形成越来越大的StoreFile，当单个StoreFile大小超过一定阈值后，会触发Split操作，同时把当前Region Split成2个Region，父Region会下线，新Split出的2个孩子Region会被HMaster分配到相应的HRegionServer上，使得原先1个Region的压力得以分流到2个Region上。</p>
+<h2 id="MemStore"><a href="#MemStore" class="headerlink" title="MemStore"></a>MemStore</h2><p>memStore 是放在内存里的，保存修改的数据即keyValues。当memStore的大小达到一个阀值（默认64MB）时，memStore会被flush到文件。</p>
+<h2 id="StoreFile"><a href="#StoreFile" class="headerlink" title="StoreFile"></a>StoreFile</h2><p>memStore内存中的数据写到文件后就是StoreFile，StoreFile底层是以HFile的格式保存。</p>
+<h2 id="HFile"><a href="#HFile" class="headerlink" title="HFile"></a>HFile</h2><p>HBase中KeyValue数据的存储格式，是Hadoop的二进制格式文件。HFile文件是不定长的，长度固定的只有其中的两块：Trailer和FileInfo。<br>Trailer中有指针指向其他数据块的起始点，FileInfo记录了文件的一些meta信息。<br>Data Block段用来保存表中的数据，这部分可以被压缩，Meta Block段（可选的）用来保存用户自定义的kv段，可以被压缩。 FileInfo段用来保存HFile的元信息，不能被压缩，用户也可以在这一部分添加自己的元信息。 Data Block Index段（可选的）用来保存Meta Blcok的索引。 Trailer这一段是定长的。保存了每一段的偏移量，读取一个HFile时，会首先读取Trailer，Trailer保存了每个段的起始位置(段的Magic Number用来做安全check)，然后，DataBlock Index会被读取到内存中，这样，当检索某个key时，不需要扫描整个HFile，而只需从内存中找到key所在的block，通过一次磁盘io将整个 block读取到内存中，再找到需要的key。DataBlock Index采用LRU机制淘汰。 HFile的Data Block，Meta Block通常采用压缩方式存储，压缩之后可以大大减少网络IO和磁盘IO，随之而来的开销当然是需要花费cpu进行压缩和解压缩。<br>HFile文件为磁盘顺序读取做了优化，按页存储，合并小文件组成大文件，写入速度快是因为它其实并不是真的立即写入文件中，而是先写入内存，随后异步刷入HFile，这个过程对用户是透明的。</p>
+<h2 id="HLog"><a href="#HLog" class="headerlink" title="HLog"></a>HLog</h2><p>HLog(WAL log)：WAL意为write ahead log，预写日志，用来做灾难恢复使用，HLog记录数据的所有变更，一旦region server 宕机，就可以从log中进行恢复。在每次用户操作写入MemStore的之前，会写一份数据到HLog文件中，HLog文件定期会滚动出新的，并删除旧的文件（已持久化到StoreFile中的数据）。<br>当HRegionServer意外终止后，HMaster会通过Zookeeper感知到，HMaster首先会处理遗留的 HLog文件，将其中不同Region的Log数据进行拆分，分别放到相应region的目录下，然后再将失效的region重新分配，领取 到这些region的HRegionServer在Load Region的过程中，会发现有历史HLog需要处理，因此会Replay HLog中的数据到MemStore中，然后flush到StoreFiles，完成数据恢复。</p>
+<h1 id="HBase查询过程解析"><a href="#HBase查询过程解析" class="headerlink" title="HBase查询过程解析"></a>HBase查询过程解析</h1><p>HBase能提供实时计算服务主要原因是由其架构和底层的数据结构决定的，即由LSM-Tree + HTable(region分区) + BlockCache决定。<br>HBase使用三层结构来定位HRegion：</p>
+<blockquote>
+<p>1、通过zk的/hbase/rs得到存储-ROOT-表的HRegion位置。<br>2、.META.表中所有Region的元数据保存在-ROOT-表中，通过-ROOT-表定位到.META.表的位置<br>3、通过.META.表找到所要的用户表HRegion的位置</p>
+</blockquote>
+<p>HBase读取首先会在缓存（BlockCache）中查找，它采用了LRU（最近最少使用算法），如果缓存中没找到，会从内存中的MemStore中查找，只有这两个地方都找不到时，才会加载HFile中的内容，而读取HFile速度也会很快，因为节省了磁盘寻道开销。</p>
+<h2 id="HRegionServer，HMaster，ZK之间的关系"><a href="#HRegionServer，HMaster，ZK之间的关系" class="headerlink" title="HRegionServer，HMaster，ZK之间的关系"></a>HRegionServer，HMaster，ZK之间的关系</h2><p>HMaster，HRegionServer启动时分别向ZK进行注册，与ZK保持联系。同时HRegionServer会向HMaster中注册，定期发送心跳告知HMaster自己的状态。</p>
+<h1 id="HBase-Shell"><a href="#HBase-Shell" class="headerlink" title="HBase Shell"></a>HBase Shell</h1><p>查看表：list<br>创建表：create ‘t1’,{NAME =&gt; ‘f1’, VERSIONS =&gt; 2},{NAME =&gt; ‘f2’, VERSIONS =&gt; 2}<br>删除表：disable ‘t1’; drop ‘t1’<br>查看表的结构： describe ‘t1’<br>修改表结构：disable ‘t1’;alter ‘test1’,{NAME=&gt;’body’,TTL=&gt;’15552000’},{NAME=&gt;’meta’, TTL=&gt;’15552000’};enable ‘t1’<br>添加数据：put ‘t1’,’rowkey001’,’f1:col1’,’value01’<br>查询数据：get ‘t1’,’rowkey001’, ‘f1:col1’<br>扫描表：scan ‘t1’,{LIMIT=&gt;5}<br>删除数据：</p>
+<blockquote>
+<p>(删除表t1，rowkey001中的f1:col1的数据)delete ‘t1’,’rowkey001’,’f1:col1’<br>(删除表t1，rowk001的数据)  deleteall ‘t1’,’rowkey001’<br>(删除表中的所有数据) truncate ‘t1’</p>
+</blockquote>
 
                 
 
@@ -233,13 +242,9 @@
                 <!-- Pager -->
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/article/article1/" data-toggle="tooltip" data-placement="top" title="[java基础] 类加载机制">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/article/blog/" data-toggle="tooltip" data-placement="top" title="[随笔] welcome to my blog">Next Post &rarr;</a>
+                            <a href="/article/springboot/" data-toggle="tooltip" data-placement="top" title="[spring] springboot源码解析">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -274,7 +279,7 @@
         <div id="toc" class="toc-article">
         <strong class="toc-title">Contents</strong>
         
-          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#写在开篇之前"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">写在开篇之前</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#let’s-begin"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">let’s begin</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#then"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">then</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#github-ssh配置"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">github ssh配置</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#last"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">last</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#友情提醒"><span class="toc-nav-number">4.1.</span> <span class="toc-nav-text">友情提醒</span></a></li></ol></li></ol>
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#什么是HBase"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">什么是HBase</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#HBase存储结构"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">HBase存储结构</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HMaster"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">HMaster</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HRegionServer"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">HRegionServer</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HRegion"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">HRegion</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Store"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">Store</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#MemStore"><span class="toc-nav-number">2.5.</span> <span class="toc-nav-text">MemStore</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#StoreFile"><span class="toc-nav-number">2.6.</span> <span class="toc-nav-text">StoreFile</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HFile"><span class="toc-nav-number">2.7.</span> <span class="toc-nav-text">HFile</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HLog"><span class="toc-nav-number">2.8.</span> <span class="toc-nav-text">HLog</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#HBase查询过程解析"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">HBase查询过程解析</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#HRegionServer，HMaster，ZK之间的关系"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">HRegionServer，HMaster，ZK之间的关系</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#HBase-Shell"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">HBase Shell</span></a></li></ol>
         
         </div>
       </aside>
@@ -294,7 +299,7 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#Hexo" title="Hexo">Hexo</a>
+                          <a class="tag" href="/tags/#HBase" title="HBase">HBase</a>
                         
                     </div>
                 </section>
