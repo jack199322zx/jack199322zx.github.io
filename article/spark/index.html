@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          [大数据] Spark源码解析（yarn模式启动） - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/spark/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_bg.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#Spark" title="Spark">Spark</a>
+                            
+                        </div>
+                        <h1>[大数据] Spark源码解析（yarn模式启动）</h1>
+                        <h2 class="subheading">Spark源码解析</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2019-06-15
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h1><h2 id="yarn-client模式"><a href="#yarn-client模式" class="headerlink" title="yarn-client模式"></a>yarn-client模式</h2><blockquote>
+<p> /#!/bin/bash<br> /usr/local/spark/spark-2.4.0-bin-hadoop2.6/bin/spark-submit \<br> –master yarn \<br> –name Spark_Learn_Test \<br> –class com.oppo.datacenter.oneservice.task.Test1 \<br> –num-executors 100 \<br> –driver-memory 16G \<br> –deploy-mode client \<br> –executor-memory 16G  \<br> –executor-cores  4 \<br> –queue root.default \<br> /home/stat/one-service/oneservice-spark-job/lib/spark-task.jar</p>
+</blockquote>
+<p>编写如上一个脚本，–master参数设置为yarn，deploy-mode设置为client，跑一下spark任务。</p>
+<p><img src="/img/article/spark/spark1.png" alt="prepare"><br>spark-submit提交作业之后，由SparkSubmit启动任务，如上图，当deployMode为client，master为yarn时启动的是用户jar包main启动类，当deployMode为cluster，master为yarn时启动的是YarnClusterApplication。<br>这里先看一下deployMode为client时的启动流程。</p>
+<p><img src="/img/article/spark/spark2.png" alt="prepare"><br>由JavaMainApplication通过反射启动用户jar包的main方法。</p>
+<p><img src="/img/article/spark/spark3.png" alt="prepare"><br>用户main方法里边创建SparkSession（对SparkContext的一层包装）或直接创建SparkContext。<br>进行SparkContext初始化。</p>
+<p><img src="/img/article/spark/spark4.png" alt="prepare"><br>前期工作主要是对spark参数的一些验证及环境的初始化。</p>
+<p><img src="/img/article/spark/spark5.png" alt="prepare"><br>初始化LiveListenerBus（Spark事件总线），初始化AppStatusStore，并将AppStatusListener加入到listenerBus。创建SparkEnv，SparkUI，这里重点看一下SparkEnv的创建。</p>
+<p><img src="/img/article/spark/spark6.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark7.png" alt="prepare"><br>判断是否是driver，在这里是driver，进入到RpcEnv.create方法。</p>
+<p><img src="/img/article/spark/spark8.png" alt="prepare"><br>创建了driver服务端nettyServer，并将nettyEnv返回。</p>
+<p><img src="/img/article/spark/spark9.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark10.png" alt="prepare"><br>初始化序列化管理器，广播变量管理器，内存管理器，注册MapOutputTrackerMaster Endpoint（后续篇章会介绍Spark RPC通信机制，这里暂且不谈），NettyBlockTransferService，块管理器BlockManager，注册BlockManagerMaster Endpoint，OutputCommitCoordinator。</p>
+<p><img src="/img/article/spark/spark11.png" alt="prepare"><br>接下来回到SparkContext，注册HeartbeatReceiver Endpoint，创建TaskScheduler及SchedulerBackend，创建DAGScheduler，创建并启动Heartbeater，启动TaskScheduler，BlockManager初始化，启动MestricsSystem。这里重点看一下SparkContext.createTaskScheduler方法。</p>
+<p><img src="/img/article/spark/spark12.png" alt="prepare"><br>master为yarn时，deployMode为client时，createTaskScheduler创建的是YarnScheduler，createSchedulerBackend创建的是YarnClientSchedulerBackend。</p>
+<p>再回到SparkContext，_taskScheduler.start()，看一下返回的YarnScheduler的start方法。<br>YarnScheduler &gt; TaskSchedulerImpl &gt; TaskScheduler，start方法如下：</p>
+<p><img src="/img/article/spark/spark13.png" alt="prepare"></p>
+<p>首先启动YarnClientSchedulerBackend，YarnClientSchedulerBackend &gt; YarnSchedulerBackend &gt; CoarseGrainedSchedulerBackend &gt; ExecutorAllocationClient, SchedulerBackend。</p>
+<p><img src="/img/article/spark/spark14.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark15.png" alt="prepare"><br>YarnClientSchedulerBackend的start方法中创建了Client，通过Client向Yarn提交作业，重点看一点Client的submitApplication方法。这里的yarnClient实则为YarnClientImpl，进行init方法，并启动。随后向ResoureManager申请新的application，进行资源的验证后，重点看一下createContainerLaunchContext。</p>
+<p><img src="/img/article/spark/spark16.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark17.png" alt="prepare"><br>createContainerLaunchContext方法很长，我截取了关键部分进行讲诉，首先是配置启动环境，上传spark_conf，spark_lib压缩包，用户的jar包<br>到hdfs，如果是depolyMode为client模式，则不会上传用户jar包。随后拼接一系列jvm启动参数，并设置启动的主类ApplicationMaster（Client模式），随后将command放入amContainer中。</p>
+<p><img src="/img/article/spark/spark18.png" alt="prepare"><br>最终调用YarnClientImpl的submitApplication，向ResourceManager提交应用，ResourceManager将分配一台NodeManager用来执行封装的启动命令，来启动ApplicationMaster的main函数</p>
+<p><img src="/img/article/spark/spark19.png" alt="prepare"><br>ApplicationMaster的main函数中经过一层判断，由于是client模式，执行runExecutorLauncher，创建ApplicationMaster的RpcEnv，向ResourceManager注册ApplicationMaster，注意这里setupEndpointRef是向driver发送了一条远程消息CheckExistence，相当于是建立和driver点到点通信。<br>随后进入到createAllocator方法。</p>
+<p><img src="/img/article/spark/spark20.png" alt="prepare"></p>
+<p>注册AM Endpoint，AM Endpoint Onstart启动时向driver发送RegisterClusterManager消息，allocateResources方法将会向ResourceManager申请一批Container资源，handleAllocatedContainers -&gt;<br>runAllocatedContainers，核心代码如下，封装成ExecutorRunnable，并调用run方法，最终调用startContainer，启动容器，容器中封装了启动命令，可以看到实际上启动的是YarnCoarseGrainedExecutorBackend。</p>
+<p><img src="/img/article/spark/spark21.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark22.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark23.png" alt="prepare"><br>YarnCoarseGrainedExecutorBackend的main方法启动后，将会调用run方法，获取driver端的sparkConf配置，并设置executorEnv，注册Executor Endpoint，WorkerWatcher Endpoint。这里Executor Endpoint实则为YarnCoarseGrainedExecutorBackend本身。</p>
+<p><img src="/img/article/spark/spark24.png" alt="prepare"><br>当执行setupEnpoint时会委派Dispatcher注册Endpoint，会封装一个EndPointData（name, endpoint, endpointRef）到endpoints中，并向receivers投递该data，Dispatcher中有个属性threadpool，是一个线程池，该线程池封装了一个MessageLoop，是一个Runnable，会不断从receivers中取出EndPointData，EndPointData构造器中有个Inbox对象，会调用这个Inbox的process方法。</p>
+<p><img src="/img/article/spark/spark25.png" alt="prepare"><br>Inbox对象在初始化时会执行</p>
+<blockquote>
+<p> inbox.synchronized {<br>   messages.add(OnStart)<br> }</p>
+</blockquote>
+<p>向messages中添加OnStart实例，于是每个在本地注册的Endpoint都会由Inbox进行处理，首先执行endpoint.onStart()方法。</p>
+<p><img src="/img/article/spark/spark26.png" alt="prepare"><br>之前提到的CoarseGrainedExecutorBackend也是一个Endpoint，并且进行了注册，于是会调用其OnStart方法。会向driver发送RegisterExecutor消息。</p>
+<p><img src="/img/article/spark/spark27.png" alt="prepare"><br>driver中的CoarseGrainedSchedulerBackend将会收到RegisterExecutor消息，会回复RegisterdExecutor给Executor。</p>
+<p><img src="/img/article/spark/spark28.png" alt="prepare"><br>CoarseGrainedExecutorBackend收到RegisteredExecutor之后，将会创建Executor，之后会用Executor进行Task的创建和管理。补充一下CoarseGrainedSchedulerBackend中有一条属性，val driverEndpoint = rpcEnv.setupEndpoint(ENDPOINT_NAME, createDriverEndpoint())，注册了driverEndpoint。</p>
+<h2 id="yarn-cluster模式"><a href="#yarn-cluster模式" class="headerlink" title="yarn-cluster模式"></a>yarn-cluster模式</h2><p>接下来分析deployMode为cluster的情况，启动类从YarnClusterApplication开始，调用Client的run方法。<br>第一行，submitApplication()，是不是很熟悉，没错，跟client模式一样，同样是向ResourceManager提交作业，<br>在容器中启动ApplicationMaster，不同之处在于ApplicationMaster的行为不一样。</p>
+<p><img src="/img/article/spark/spark29.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark30.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark31.png" alt="prepare"><br>看一下ApplicationMaster的run方法，我省略了一些不重要的部分，其中会进行判断是否是cluster模式，如果是则会调用runDriver()</p>
+<p><img src="/img/article/spark/spark32.png" alt="prepare"><br>runDriver()方法首先startUserApplication，用一个单独的线程启动用户上传的jar包的main方法，然后开始等待用户代码初始化SparkContext，如果超过最大等待时间或者用户代码执行完毕没有初始化SparkContext，则会抛出异常。</p>
+<p>这里会获取用户创建的SparkContext，注意此时SparkContext初始化时，createTaskScheduler创建的是YarnClusterScheduler，createSchedulerBackend创建的是YarnClusterSchedulerBackend。_taskScheduler.start()中调用的backend实际上YarnClusterSchedulerBackend，其start方法与YarnClientSchedulerBackend不同之处就在于由于已经在集群环境中运行作业，就不需要再submitApplication了，后续的Executor创建，及与driver交互就交给runDriver的主线程去做，runDriver的主线程通过YarnClusterScheduler的postStartHook()拿到用户创建的SparkContext之后，会进行ApplicationMaster的注册，注册driver Endpoint，然后createAllocation，申请Container用来运行CoarseGrainedExecutorBackend，跟client模式类似。<br><img src="/img/article/spark/spark33.png" alt="prepare"></p>
+<p><img src="/img/article/spark/spark34.png" alt="prepare"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此，大致讲诉了Spark在yarn环境提交作业的运行流程。可以做如下总结：</p>
+<h2 id="yarn-client模式："><a href="#yarn-client模式：" class="headerlink" title="yarn-client模式："></a>yarn-client模式：</h2><p>1.driver运行在spark客户端，通过SparkSubmit执行用户jar包main函数，用户代码初始化SparkContext，SparkContext根据deployMode和master参数创建YarnScheduler和YarnClientSchedulerBackend（分别对应TaskScheduler和SchedulerBackend）。<br>2.YarnClientSchedulerBackend执行start方法，创建Client，Client向ResourceManager提交作业。<br>3.ResourceManager收到请求后，在集群中选择一个NodeManager，为该应用程序分配Container并创建ApplicationMaster。<br>3.ApplicationMaster向ResourceManager申请一批容器用来创建CoarseGrainedExecutorBackend。<br>4.CoarseGrainedExecutorBackend与Driver通信，向Driver发送注册消息，收到Driver应答以后创建Executor，<br>Driver分配Task给CoarseGrainedExecutorBackend运行，CoarseGrainedExecutorBackend向Driver汇报运行的状态和进度。<br>5.应用程序运行完成后，执行SparkContext.stop关闭资源，停止所有Executor。</p>
+<h2 id="yarn-cluster模式："><a href="#yarn-cluster模式：" class="headerlink" title="yarn-cluster模式："></a>yarn-cluster模式：</h2><p>1.driver运行在yarn环境，通过SparkSubmit执行YarnClusterApplication的main函数。<br>2.YarnClusterApplication创建Client，Client向ResourceManager提交作业。<br>3.ResourceManager收到请求后，在集群中选择一个NodeManager，为该应用程序分配Container并创建ApplicationMaster。<br>4.ApplicationMaster在一个单独的线程执行用户代码，等待一段时间内拿到用户创建的SparkContext，SparkContext根据deployMode和master参数创建YarnClusterScheduler和YarnClusterSchedulerBackend（分别对应TaskScheduler和SchedulerBackend）。<br>5.ApplicationMaster拿到SparkContext之后，申请一批容器用来创建CoarseGrainedExecutorBackend。<br>6.之后同client模式。</p>
+<p>也就是说，yarn-client模式，ApplicationMaster仅仅负责向ResourceManager申请容器执行Executor，SparkContext在driver端初始化，而yarn-cluster模式，ApplicationMaster单独用一个线程运行用户代码，执行SparkContext初始化，并向ResourceManager申请容器执行Executor。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/hbase/" data-toggle="tooltip" data-placement="top" title="[大数据] HBase基础">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#工作原理"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">工作原理</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#yarn-client模式"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">yarn-client模式</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#yarn-cluster模式"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">yarn-cluster模式</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#总结"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">总结</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#yarn-client模式："><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">yarn-client模式：</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#yarn-cluster模式："><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">yarn-cluster模式：</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Spark" title="Spark">Spark</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2019 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
