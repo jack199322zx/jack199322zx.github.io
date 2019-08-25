@@ -209,6 +209,163 @@
 
 <div class="post-preview">
 
+    <a href="/article/dubbo5/">
+        <h2 class="post-title">
+            [微服务] dubbo源码解析之SPI机制
+        </h2>
+        <h3 class="post-subtitle">
+            dubbo源码解析
+        </h3>
+        <div class="post-content-preview">
+            前言要说起dubbo的SPI，首先得从ExtensionLoader.getExtensionLoader(Class)说起。
+
+
+首先尝试从static变量EXTENSION_LOADERS中获取缓存中是否已经为该类创建ExtensionLoader，若无则new一个ExtensionLoader，并将其缓存，ExtensionLoader的构造器中判断该类是否是ExtensionFact......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-08-24
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/article/dubbo4/">
+        <h2 class="post-title">
+            [微服务] dubbo源码解析之RPC调用
+        </h2>
+        <h3 class="post-subtitle">
+            dubbo源码解析
+        </h3>
+        <div class="post-content-preview">
+            正文承接上回dubbo源码解析之consumer订阅我们这次详细的看一下dubbo怎么实现RPC远程调用的过程：上回说到，在ZK中拿到了provider的URL后，AbstractRegistry.notify() -&gt; RegistryDirectory.refreshOverrideAndInvoker() -&gt; toInvokers() -&gt;DubboProtocol......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-08-24
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/article/dubbo3/">
+        <h2 class="post-title">
+            [微服务] dubbo源码解析之consumer订阅
+        </h2>
+        <h3 class="post-subtitle">
+            dubbo源码解析
+        </h3>
+        <div class="post-content-preview">
+            正文
+
+如上，配置好consumer的配置类，启动容器。@Reference注解的处理可参见AnnotationInjectedBeanPostProcessor和ReferenceAnnotationBeanPostProcessor。
+
+本质上是获取@Reference注解标注的类，并返回一个代理对象，通过反射注入到属性中。
+
+buildProxy -&gt; buildInvocati......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-08-24
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/article/dubbo2/">
+        <h2 class="post-title">
+            [微服务] dubbo源码解析之provider发布
+        </h2>
+        <h3 class="post-subtitle">
+            dubbo源码解析
+        </h3>
+        <div class="post-content-preview">
+            承接上一章dubbo初始化
+上一节提到dubbo容器在启动过程中会注册好ServiceBean等组件，注意到ServiceBean是一个ApplicationListener的子类，看一下其OnApplicationEvent方法。
+
+进入到export() -&gt; ServiceConfig.checkAndUpdateSubConfigs()，来看一下这个方法做了什么。
+
+
+star......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-08-24
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/article/dubbo/">
+        <h2 class="post-title">
+            [微服务] dubbo源码解析之初始化
+        </h2>
+        <h3 class="post-subtitle">
+            dubbo源码解析
+        </h3>
+        <div class="post-content-preview">
+            前言本次解析的dubbo为apache的dubbo版本。
+provider启动过程通过dubbo内置的Main入口类启动，这里我们通过注解的方式来启动dubbo配置类的扫描，重点看一下@EnableDubbo这个注解。
+这里@AliasFor注解，可以将@EnableDubbo中配置的scanBasePackages等属性传递给其子注解@DubboComponentScan的basePack......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-08-24
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/article/spark2/">
         <h2 class="post-title">
             [大数据] Spark源码解析（任务调度）
@@ -359,151 +516,6 @@ Hadoop组成HDF......
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/article/hive/">
-        <h2 class="post-title">
-            [大数据] Hive基础
-        </h2>
-        <h3 class="post-subtitle">
-            hive入门学习
-        </h3>
-        <div class="post-content-preview">
-            什么是Hivehive是基于Hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供简单的sql查询功能，可以将sql语句转换为MapReduce任务进行运行，适合数据仓库的离线统计分析。hive不太适合做交互式查询，执行MR作业的延迟较高，hive不支持对数据的改写和添加。
-数据建立过程数据源可能来自由业务数据系统（关系型数据库），文档资料（csv，txt等），其他......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2018-12-31
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#Hive" title="Hive">Hive</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
-<div class="post-preview">
-
-    <a href="/article/article8/">
-        <h2 class="post-title">
-            [elasticsearch] elasticsearch环境搭建及工作原理
-        </h2>
-        <h3 class="post-subtitle">
-            关于es的学习，分享一些心得
-        </h3>
-        <div class="post-content-preview">
-            前言在前篇中，讲到了vmvare环境的搭建。本篇将讲一下elasticsearch集群环境的配置。
-准备构建环境jdk1.8安装包elasticsearch安装包本篇使用的elasticsearch版本为5.2.2。可从elasticsearch官网上下载，https://www.elastic.co/products/elasticsearch 
-构建elasticsearch环境
-解压e......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2018-12-30
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#elasticsearch" title="elasticsearch">elasticsearch</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
-<div class="post-preview">
-
-    <a href="/article/article7/">
-        <h2 class="post-title">
-            [vmvare] vmvare搭建分布式环境
-        </h2>
-        <h3 class="post-subtitle">
-            vmvare踩坑之路
-        </h3>
-        <div class="post-content-preview">
-            前言首先安装好vmvare破解版和centos 7 64位的镜像文件（镜像文件可以去centos官网下载，vmvare破解版网上搜一下就能下载）。新建虚拟机，选择自定义安装：选择下一步，点击稍后安装操作系统。客户机这里我用的centos7 64位的linux操作系统。接下来就是虚拟机文件存储位置，处理器根据你的电脑配置来创建，普通机器推荐2个处理器，1核的配置。虚拟机的内存推荐设置为2G，也......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2018-12-23
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#vmvare" title="vmvare">vmvare</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
-<div class="post-preview">
-
-    <a href="/article/article6/">
-        <h2 class="post-title">
-            [spring] spring异步原理和事件驱动（@Async and ApplicationListener）
-        </h2>
-        <h3 class="post-subtitle">
-            spring异步原理，事件驱动原理分析
-        </h3>
-        <div class="post-content-preview">
-            @Asyncspring对@Async的处理和事务处理大同小异。@EnableAsync注解通过@Import了AsyncConfigurationSelector类，这个类默认为PROXY模式，为容器中注册了ProxyAsyncConfiguration。1234567891011@Overridepublic String[] selectImports(AdviceMode advic......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2018-12-11
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#spring" title="spring">spring</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
-<div class="post-preview">
-
-    <a href="/article/article5/">
-        <h2 class="post-title">
-            [spring] spring事务原理（@Transactional）
-        </h2>
-        <h3 class="post-subtitle">
-            spring事务原理分析
-        </h3>
-        <div class="post-content-preview">
-            话前看过我之前分析AOP博客的同胞，应该有所了解。spring对于@Transactional的事务支持也是AOP的方式。
-正文spring开启事务管理，需要添加@EnableTransactionManagement，分析一下这个注解：1234567891011@Target(&#123;ElementType.TYPE&#125;)@Retention(RetentionPolicy.R......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2018-12-11
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#spring" title="spring">spring</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -545,15 +557,11 @@ Hadoop组成HDF......
     <div class="tags">
         
             
-            <a href="/tags/#spring" title="spring" rel="5">spring</a>
-            
-        
-            
             <a href="/tags/#java基础" title="java基础" rel="1">java基础</a>
             
         
             
-            <a href="/tags/#随笔" title="随笔" rel="1">随笔</a>
+            <a href="/tags/#spring" title="spring" rel="5">spring</a>
             
         
             
@@ -561,7 +569,15 @@ Hadoop组成HDF......
             
         
             
+            <a href="/tags/#Dubbo" title="Dubbo" rel="5">Dubbo</a>
+            
+        
+            
             <a href="/tags/#elasticsearch" title="elasticsearch" rel="1">elasticsearch</a>
+            
+        
+            
+            <a href="/tags/#随笔" title="随笔" rel="1">随笔</a>
             
         
             
@@ -569,7 +585,15 @@ Hadoop组成HDF......
             
         
             
+            <a href="/tags/#hadoop" title="hadoop" rel="1">hadoop</a>
+            
+        
+            
             <a href="/tags/#Hive" title="Hive" rel="1">Hive</a>
+            
+        
+            
+            <a href="/tags/#Hexo" title="Hexo" rel="2">Hexo</a>
             
         
             
@@ -577,15 +601,7 @@ Hadoop组成HDF......
             
         
             
-            <a href="/tags/#hadoop" title="hadoop" rel="1">hadoop</a>
-            
-        
-            
             <a href="/tags/#springboot" title="springboot" rel="1">springboot</a>
-            
-        
-            
-            <a href="/tags/#Hexo" title="Hexo" rel="2">Hexo</a>
             
         
     </div>
@@ -668,23 +684,23 @@ Hadoop组成HDF......
     <ul>
       
         <li>
-          <a href="/article/spark2/">[大数据] Spark源码解析（任务调度）</a>
+          <a href="/article/dubbo5/">[微服务] dubbo源码解析之SPI机制</a>
         </li>
       
         <li>
-          <a href="/article/spark/">[大数据] Spark源码解析（yarn模式启动）</a>
+          <a href="/article/dubbo4/">[微服务] dubbo源码解析之RPC调用</a>
         </li>
       
         <li>
-          <a href="/article/hbase/">[大数据] HBase基础</a>
+          <a href="/article/dubbo3/">[微服务] dubbo源码解析之consumer订阅</a>
         </li>
       
         <li>
-          <a href="/article/springboot/">[spring] springboot源码解析</a>
+          <a href="/article/dubbo2/">[微服务] dubbo源码解析之provider发布</a>
         </li>
       
         <li>
-          <a href="/article/hadoop/">[大数据] hadoop基础</a>
+          <a href="/article/dubbo/">[微服务] dubbo源码解析之初始化</a>
         </li>
       
     </ul>
@@ -711,7 +727,7 @@ Hadoop组成HDF......
         
     <h5>ARCHIVES</h5>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">3</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">3</span></li></ul>
     </div>
 
         <hr>

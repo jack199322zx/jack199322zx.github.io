@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          [微服务] dubbo源码解析之初始化 - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/dubbo/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+                            
+                        </div>
+                        <h1>[微服务] dubbo源码解析之初始化</h1>
+                        <h2 class="subheading">dubbo源码解析</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2019-08-24
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本次解析的dubbo为apache的dubbo版本。</p>
+<h1 id="provider启动过程"><a href="#provider启动过程" class="headerlink" title="provider启动过程"></a>provider启动过程</h1><p><img src="/img/article/dubbo/dubbo1.png" alt="prepare"><br>通过dubbo内置的Main入口类启动，这里我们通过注解的方式来启动dubbo配置类的扫描，重点看一下@EnableDubbo这个注解。</p>
+<p><img src="/img/article/dubbo/dubbo2.png" alt="prepare"><br>这里@AliasFor注解，可以将@EnableDubbo中配置的scanBasePackages等属性传递给其子注解@DubboComponentScan的basePackages属性，同理其他几个属性类推。</p>
+<p><img src="/img/article/dubbo/dubbo3.png" alt="prepare"></p>
+<p><img src="/img/article/dubbo/dubbo4.png" alt="prepare"></p>
+<p>来看一下@DubboComponentScan和@EnableDubboConfig注解，依旧是老套路直接采用@Import。</p>
+<p><img src="/img/article/dubbo/dubbo5.png" alt="prepare"></p>
+<p><img src="/img/article/dubbo/dubbo6.png" alt="prepare"></p>
+<p>先来看DubboComponentScanRegistrar，实现了ImportBeanDefinitionRegistrar接口，通过重写registerBeanDefinitions向容器中注册组件。同理 @EnableDubbo也类似。</p>
+<p><img src="/img/article/dubbo/dubbo7.png" alt="prepare"></p>
+<p><img src="/img/article/dubbo/dubbo8.png" alt="prepare"></p>
+<p>理清大概的思路后，让我们再次开启愉快的debug之旅，跟踪一下方法调用链，Main.main -&gt; SpringContainer.start -&gt;  ClassPathXmlApplicationContext.start。这里我们可以看到，dubbo内置的spring启动流程，这里ApplicationContext创建的是基于XML的，因此我们至少需要配置一个xml文件，用来开启spring的通用注解，根据debug信息，这个ClassPathXmlApplicationContext是指定在classpath下META-INF/spring/*.xml。<br>由此，我们配置好xml文件内容如下：</p>
+<p><img src="/img/article/dubbo/dubbo9.png" alt="prepare"></p>
+<p>指定扫描位置，进一步回到debug中，回到我们熟悉的spring启动流程，ClassPathXmlApplicationContext.start -&gt; invokeBeanFactoryPostProcessors -&gt; (ConfigurationClassParser.doProcessConfiguration) -&gt; invokeBeanFactoryPostProcessors -&gt; ClassBeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry -&gt; ConfigurationClassPostProcessor.processConfigBeanDefinitions -&gt;<br>ConfigurationClassBeanDefinitionReader.loadBeanDefinitions -&gt;<br>loadBeanDefinitionsFromRegistrars -&gt;<br>ImportBeanDefinitionRegistrar.registerBeanDefinitions。<br>这里通过实现ImportBeanDefinitionRegistrar的接口有两个，分别是之前的DubboComponentScanRegistrar和DubboConfigConfigurationRegistrar。先来看DubboConfigConfigurationRegistrar，这个类逻辑就很简单粗暴了，<br>默认直接是单例模式，通过AnnotatedBeanDefinitionRegistryUtils.registerBeans向容器中注册DubboConfigConfiguration.Single这个类。</p>
+<p><img src="/img/article/dubbo/dubbo10.png" alt="prepare"></p>
+<p>那么这个类是搞毛的呢，咋一看，又多来几个注解，@EnableDubboConfigBindings和@EnableDubboConfigBinding，点进去一看又懵逼了，前者又@Import(DubboConfigBindingsRegistrar.class)，后者@Import(DubboConfigBindingRegistrar.class)。先别急着懵逼，继续debug看下他们是在搞什么，在registerBeans注册完Single这个类之后，容器中beanDefinitionMap多出来个Single</p>
+<p><img src="/img/article/dubbo/dubbo11.png" alt="prepare"></p>
+<p>下一步，我们再跟随debug的舞步，来到下一个ImportBeanDefinitionRegistrar接口的实现类DubboComponentScanRegistrar。<br>拿到packagesToScan的值，接下来重点看registerServiceAnnotationBeanPostProcessor和registerReferenceAnnotationBeanPostProcessor。前者向容器中注册了org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor#0，后者注册了referenceAnnotationBeanPostProcessor。<br>注意此时loadBeanDefinitions中configurationModel为以下两个组件，分别是加了@Configuration和@Component。</p>
+<p><img src="/img/article/dubbo/dubbo12.png" alt="prepare"></p>
+<p>那么问题来了，这个for循环之后，loadBeanDefinitions就应当结束了，我们刚刚添加的Single配置类咋整呢，不要着急，如果你退回去看下loadBeanDefinition调用方，这个循环有兴趣的同学可以研究一下，这里不再赘述。再下方while循环时，candidates不为空，由此又进入到loadBeanDefitnition，而此时配置类正是Single。</p>
+<p><img src="/img/article/dubbo/dubbo13.png" alt="prepare"></p>
+<p>下面就来到了DubboConfigBindingsRegistrar和DubboConfigBindingRegistrar的表演时间。</p>
+<p><img src="/img/article/dubbo/dubbo14.png" alt="prepare"></p>
+<p><img src="/img/article/dubbo/dubbo15.png" alt="prepare"></p>
+<p>我们可以看到，代码中new了一个DubboConfigBindingRegistrar，将外层for循环拿到的annotationAttributes遍历调用这个DubboConfigBindingRegistrar的registerBeanDefinitions。来看一下这个方法：</p>
+<p><img src="/img/article/dubbo/dubbo16.png" alt="prepare"></p>
+<p>这里拿到的AnnotationAttributes有三个，正是对应@EnableDubboConfigBinding(prefix = “dubbo.application”, type = ApplicationConfig.class)，接下来来到registerDubboConfigBeans：</p>
+<p><img src="/img/article/dubbo/dubbo17.png" alt="prepare"></p>
+<p>先注册了org.apache.dubbo.config.ApplicationConfig#0，接下来注册org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor#0，<br>同理接下来注册了org.apache.dubbo.config.RegistryConfig#0，org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor#1，org.apache.dubbo.config.ProtocolConfig#0，org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor#2。<br>接下来注意invokeBeanDefinitionRegistryPostProcessors执行过之后，spring（具体可参见PostProcessorRegistrationDelegate的invokeBeanFactoryPostProcessors）又给了一次机会重新取出最新注册的BeanDefinitionRegistryPostProcessor。</p>
+<p><img src="/img/article/dubbo/dubbo18.png" alt="prepare"></p>
+<p>由此，我们先前注册的ServiceAnnotationBeanPostProcessor终于有了用武之地，这个类看名字就知道是用来扫描dubbo的@Service注解的类，</p>
+<p><img src="/img/article/dubbo/dubbo19.png" alt="prepare"></p>
+<p><img src="/img/article/dubbo/dubbo20.png" alt="prepare"></p>
+<p>创建了DubboClassPathBeanDefinitionScanner（继承自Spring的ClassPathBeanDefinitionScanner），我们的ProviderService是添加了dubbo的@Service注解的，由此被注册进容器，容器中多了一个叫ServiceBean:com.nino.demo.service.ServiceInterface的RootBeanDefinition。</p>
+<p>这里提一下由于本章定义的xml不含dubbo的约束，没有类似<a href="dubbo:protocol" target="_blank" rel="noopener">dubbo:protocol</a>等自定义标签，所以spring并没有走自定义标签初始化的逻辑，也就是没有走DubboNamespaceHandler的init方法，而这个方法的作用其实和注解的形式一样，都是向容器中注册dubbo的组件。具体可参见DefaultNamespaceHandlerResolver.resolve方法。</p>
+<p><img src="/img/article/dubbo/dubbo21.png" alt="prepare"></p>
+<p>另外，@PropertySource注解的解析是在ConfigurationClassParser.doProcessConfigurationClass阶段，会把解析的配置文件放在MutablePropertySources中，以便之后可以从Environment中获取。</p>
+<p>那么这里又抛出一个问题了，之前注册的bean信息如何跟属性文件关联起来呢？<br>我们再来看一下ServiceAnnotationBeanPostProcessor，这个bean实现了BeanDefinitionRegistryPostProcessor，EnvironmentAware，BeanClassLoaderAware，ResourceLoaderAware这四个接口，因此将Environment注入到此类当中，在ServiceAnnotationBeanPostProcessor的buildServiceBeanDefinition方法中将会优先取@Service注解中的属性。<br>再来看DubboConfigBindingBeanPostProcessor这个类，这个类在afterPropertiesSet时会装载dubboConfigBinder，之后在postProcessBeforeInitialization时会加载指定的beanName且为AbstartcConfig类型的Bean，我这里demo中创建的三个DubboConfigBindingBeanPostProcessor，分别是拦截ApplicationConfig，RegistryConfig，ProtocolConfig。会将Enviroment中取到的PropertySource属性信息赋值给对应的ApplicationConfig等。由此完成了Dubbo组件（ServiceBean，ApplicationConfig，RegistryConfig，ProtocolConfig等）的实例化。</p>
+<p><img src="/img/article/dubbo/dubbo22.png" alt="prepare"></p>
+<p>至此，dubbo的初始化我们告一段落，下章将解析一下provider的发布。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/article/dubbo2/" data-toggle="tooltip" data-placement="top" title="[微服务] dubbo源码解析之provider发布">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/article/spark2/" data-toggle="tooltip" data-placement="top" title="[大数据] Spark源码解析（任务调度）">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#前言"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#provider启动过程"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">provider启动过程</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Dubbo" title="Dubbo">Dubbo</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2019 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
