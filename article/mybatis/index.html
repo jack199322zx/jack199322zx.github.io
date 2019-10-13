@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          Mybatis源码解析 - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/mybatis/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#mybatis" title="mybatis">mybatis</a>
+                            
+                        </div>
+                        <h1>Mybatis源码解析</h1>
+                        <h2 class="subheading">dubbo源码解析</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2019-10-13
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本次源码解析mybatis版本为3.5.2，mysql-connection-java版本为6.0.6</p>
+<h1 id="初始环境准备"><a href="#初始环境准备" class="headerlink" title="初始环境准备"></a>初始环境准备</h1><p>配置好DataSource和SqlSessionFactory，我们就可以愉快的进行单元测试了。</p>
+<p><img src="/img/article/mybatis/mybatis1.png" alt="prepare"></p>
+<p>编写如下单元测试类，通过SqlSessionFactory打开SqlSession会话（SqlSessionFactory在每个样例测试或spring容器中应仅当初始化一次），使用try-with-resource，进行一次查找操作。</p>
+<p><img src="/img/article/mybatis/mybatis2.png" alt="prepare"></p>
+<p>这里我们是通过编程式指定Mapper的位置，另一种方式是通过mybatis-config全局配置文件去指定。<br>让我们愉快的进行debug之旅，首先由Configuration.addMappers打开篇章：<br>Configuration.addMappers() -&gt; MapperRegistry.addMapper() -&gt; MapperAnnotationBuilder.parse() -&gt; loadXmlResource()</p>
+<p><img src="/img/article/mybatis/mybatis3.png" alt="prepare"></p>
+<p>看一下这段代码，其实就是首先尝试加载mapper那个类的全路径对应的xml（比如有个类com.nino.demo.BlogMapper对应xml位置就是com/nino/demo/BlogMapper.xml），如果加载不到会再次尝试使用类加载器加载，如果加载到了就用XMLMapperBuilder进行解析。</p>
+<p>知道原理，于是乎我们去resources目录下新建com/nino/demo/mapper/BlogMapper.xml文件，内容如下：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;!DOCTYPE mapper
+        PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+        &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;com.nino.demo.mapper.BlogMapper&quot;&gt;
+
+    &lt;cache eviction=&quot;LRU&quot;
+            flushInterval=&quot;60000&quot;
+            size=&quot;512&quot;
+            readOnly=&quot;true&quot;/&gt;
+
+    &lt;sql id=&quot;common&quot;&gt;
+        `id`,
+        `name`,
+        `create_time`,
+        `author`
+    &lt;/sql&gt;
+
+    &lt;select id=&quot;findBlogById&quot; resultType=&quot;com.nino.demo.model.Blog&quot;&gt;
+        select &lt;include refid=&quot;common&quot;/&gt;
+        from test_blog
+        where id = #{id}
+    &lt;/select&gt;
+
+    &lt;select id=&quot;findBlogs&quot; resultType=&quot;com.nino.demo.model.Blog&quot; useCache=&quot;true&quot;&gt;
+        select &lt;include refid=&quot;common&quot;/&gt;
+        from test_blog
+    &lt;/select&gt;
+
+    &lt;insert id=&quot;insertBlog&quot;&gt;
+        insert into test_blog(
+          &lt;include refid=&quot;common&quot;/&gt;
+        ) values (
+          #{blog.id},
+          #{blog.name},
+          #{blog.createTime},
+          #{blog.author}
+        )
+    &lt;/insert&gt;
+&lt;/mapper&gt;
+</code></pre><p>来看看XMLMapperBuilder的parse方法：</p>
+<p><img src="/img/article/mybatis/mybatis4.png" alt="prepare"></p>
+<p><img src="/img/article/mybatis/mybatis5.png" alt="prepare"></p>
+<p>实际上就是去解析mapper文件，解析cache-ref，cache，parameterMap，resultMap，sql，select，update，insert，delete标签，将解析后的节点存储在configuration中。<br>解析xml配置的细节不在本文重点探讨范围内，在此略过，有兴趣的朋友可以看一下。<br>这里我们回到测试样例，来到sqlSessionFactory.openSession(true)</p>
+<p><img src="/img/article/mybatis/mybatis6.png" alt="prepare"></p>
+<p>DefaultSqlSessionFactory的openSessionFromDataSource方法，从environment中获取TransactionFactory，这里我们配置的是JdbcTransactionFactory，创建JdbcTransaction，接着创建Executor，<br>默认情况下创建的是CachingExecutor。</p>
+<p><img src="/img/article/mybatis/mybatis7.png" alt="prepare"></p>
+<p>同时，我们还可以看到，mybatis在Executor处，设置了插件机制，给了interceptor一个机会去返回代理对象。</p>
+<p><img src="/img/article/mybatis/mybatis8.png" alt="prepare"></p>
+<p>getMapper方法实际是获取代理对象，从已经解析好的MapperRegistry中获取到MapperProxyFactory对象，然后由这个MapperProxyFactory来创建代理对象，我们来看看MapperProxy类：</p>
+<p><img src="/img/article/mybatis/mybatis9.png" alt="prepare"></p>
+<p>MapperProxy实现了InvocationHandler，使用jdk动态代理，当我们调用代理类的方法时，会直接执行MapperProxy的invoke方法，这里我们样例类中调用findBlogs方法：</p>
+<p><img src="/img/article/mybatis/mybatis10.png" alt="prepare"></p>
+<p>invoke方法创建了一个MapperMethod，并调用其execute()：</p>
+<p><img src="/img/article/mybatis/mybatis11.png" alt="prepare"></p>
+<p>由DefaultSqlSession的selectList() -&gt; CachingExecutor.query()</p>
+<p><img src="/img/article/mybatis/mybatis12.png" alt="prepare"></p>
+<p><img src="/img/article/mybatis/mybatis13.png" alt="prepare"></p>
+<p>使用CachedKey来描述对sql级别做的缓存，以便重用，进入到重载的方法query()：</p>
+<p><img src="/img/article/mybatis/mybatis14.png" alt="prepare"></p>
+<p><img src="/img/article/mybatis/mybatis15.png" alt="prepare"></p>
+<p>首先从MappedStatement中获取Cache（即在mapper配置文件中配置了<cache>标签），如果有配置，那么会优先从二级缓存中获取数据，注意这里构建的二级缓存是面向mapper级别的，<br>二级缓存有并发问题和事务问题存在，如果是一个mapper文件中对于某张表做了二级缓存的处理，而另一个mapper文件又对这张表有增删改的处理，那么另一个mapper文件触发修改行为时，此mapper文件是无法感知的，即出现脏读的现象。因此处理使用二级缓存应当谨慎。<br>二级缓存中获取不到或没有配置二级缓存，则会从一级缓存中获取，这里一级缓存是PerpetualCache，一级缓存是面向SqlSession级别的。若一级缓存中查询不到，则会从数据库中获取。</cache></p>
+<h1 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h1><p>mybatis中#{}和${}的区别是什么，#{}将会被解析为一个占位符?，占位符里边的内容将会被替换为字符串，比如有条sql在xml中配置为select id, name from table1 where id = #{}，最终生成的sql为<br>select id, name from table1 where id = ‘xxx’，防止了sql注入的风险，而${}存在sql注入风险，比如这里将123;DELETE  FROM table1用作替换，则生成的sql为select id, name from table1 where id = 123;DELETE FROM table1，则会被攻击者利用。</p>
+<h1 id="mybatis与spring集成"><a href="#mybatis与spring集成" class="headerlink" title="mybatis与spring集成"></a>mybatis与spring集成</h1><p>引入依赖项：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">&lt;groupId&gt;org.mybatis&lt;/groupId&gt;</span><br><span class="line">&lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;</span><br><span class="line">&lt;version&gt;1.3.2&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">&lt;groupId&gt;org.springframework&lt;/groupId&gt;</span><br><span class="line">&lt;artifactId&gt;spring-context&lt;/artifactId&gt;</span><br><span class="line">&lt;version&gt;5.1.3.RELEASE&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">&lt;groupId&gt;org.springframework&lt;/groupId&gt;</span><br><span class="line">&lt;artifactId&gt;spring-web&lt;/artifactId&gt;</span><br><span class="line">&lt;version&gt;5.1.3.RELEASE&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">&lt;groupId&gt;org.springframework&lt;/groupId&gt;</span><br><span class="line">&lt;artifactId&gt;spring-jdbc&lt;/artifactId&gt;</span><br><span class="line">&lt;version&gt;5.1.3.RELEASE&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
+<p>创建application类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@ComponentScan(&quot;com.nino.demo&quot;)</span><br><span class="line">@EnableTransactionManagement</span><br><span class="line">@MapperScan(&quot;com.nino.demo&quot;)</span><br><span class="line">public class Application &#123;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) &#123;</span><br><span class="line">        SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();</span><br><span class="line">        sqlSessionFactoryBean.setDataSource(dataSource);</span><br><span class="line">        String resource = &quot;classpath*:mybatis/mapper/**/*.xml&quot;;</span><br><span class="line">        PathMatchingResourcePatternResolver mapperLocationResolver = new PathMatchingResourcePatternResolver();</span><br><span class="line">        Resource[] resources;</span><br><span class="line">        try &#123;</span><br><span class="line">            resources = mapperLocationResolver.getResources(resource);</span><br><span class="line">            sqlSessionFactoryBean.setMapperLocations(resources);</span><br><span class="line">            return sqlSessionFactoryBean.getObject();</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public DataSource dataSource() &#123;</span><br><span class="line">        PooledDataSource dataSource = new PooledDataSource();</span><br><span class="line">        dataSource.setDefaultAutoCommit(true);</span><br><span class="line">        dataSource.setDriver(Driver.class.getCanonicalName());</span><br><span class="line">        dataSource.setUrl(&quot;jdbc:mysql://172.17.160.88:3306/db_data_access?useUnicode=true&amp;characterEncoding=UTF-8&quot;);</span><br><span class="line">        dataSource.setUsername(&quot;root&quot;);</span><br><span class="line">        return dataSource;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    public PlatformTransactionManager platformTransactionManager(DataSource dataSource) &#123;</span><br><span class="line">        return new DataSourceTransactionManager(dataSource);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>创建单元测试类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class TestMybatisSpring &#123;</span><br><span class="line"></span><br><span class="line">    private AnnotationConfigApplicationContext applicationContext;</span><br><span class="line"></span><br><span class="line">    @Before</span><br><span class="line">    public void init() &#123;</span><br><span class="line">        applicationContext = new AnnotationConfigApplicationContext(Application.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void test() &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>@MapperScan向容器@Import了MapperScannerRegistrar这个类，其实现了ImportBeanDefinitionRegistrar，重写registerBeanDefinitions方法：</p>
+<p><img src="/img/article/mybatis/mybatis16.png" alt="prepare"></p>
+<p>重点在scanner.doScan方法，其registerFilters，isCandidateComponent，checkCandidate方法配合使用，向容器中添加了Mapper接口的beanDefinition，而这个beanDefinition对应的beanClass设置为MapperFactoryBean， MapperFactoryBean实现了FactoryBean接口。</p>
+<p><img src="/img/article/mybatis/mybatis17.png" alt="prepare"></p>
+<p><img src="/img/article/mybatis/mybatis18.png" alt="prepare"></p>
+<p>这里processBeanDefinitions将beanDefinition设置为MapperFactoryBean类型，并为其添加属性sqlSessionFactory，addToConfig。</p>
+<p><img src="/img/article/mybatis/mybatis19.png" alt="prepare"></p>
+<p>于是乎，假如我们有这样一个类，使用@Autowired注入BlogMapper，会在注入的时候getBean（”blogMapper”） -&gt; AbstractBeanFactory.doGetBean() -&gt; getObjectForBeanInstance() -&gt; FactoryBeanRegistrySupport.getObjectFromFactoryBean() -&gt; doGetObjectFromFactoryBean() -&gt; MapperFactoryBean.getObject()，这样最终BlogMapper注入的为mybatis生成的jdk代理对象。</p>
+<p><img src="/img/article/mybatis/mybatis20.png" alt="prepare"></p>
+<p>至此，mybatis及其与spring集成篇章就结束了。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/article/springtx/" data-toggle="tooltip" data-placement="top" title="Spring事务源码解析">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/article/dubbo5/" data-toggle="tooltip" data-placement="top" title="[微服务] dubbo源码解析之SPI机制">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#前言"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#初始环境准备"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">初始环境准备</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#扩展"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">扩展</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#mybatis与spring集成"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">mybatis与spring集成</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#mybatis" title="mybatis">mybatis</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2019 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

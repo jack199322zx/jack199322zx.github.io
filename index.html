@@ -209,6 +209,67 @@
 
 <div class="post-preview">
 
+    <a href="/article/springtx/">
+        <h2 class="post-title">
+            Spring事务源码解析
+        </h2>
+        <h3 class="post-subtitle">
+            springtx源码解析
+        </h3>
+        <div class="post-content-preview">
+            正文上个篇章讲过了mybatis与spring的集成，这里偷个油，顺带把spring事务原理解析一下。配置好我们的demo，开搞。
+
+BlogService类在初始化后会调用BlogDAO类的init方法，可以看到BlogDAO的init方法上加了@Transcational注解，在我们的配置类加上@EnableTransactionManagement注解，这个注解在之前事务章节解析过，需......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-10-13
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#spring" title="spring">spring</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
+    <a href="/article/mybatis/">
+        <h2 class="post-title">
+            Mybatis源码解析
+        </h2>
+        <h3 class="post-subtitle">
+            dubbo源码解析
+        </h3>
+        <div class="post-content-preview">
+            前言本次源码解析mybatis版本为3.5.2，mysql-connection-java版本为6.0.6
+初始环境准备配置好DataSource和SqlSessionFactory，我们就可以愉快的进行单元测试了。
+
+编写如下单元测试类，通过SqlSessionFactory打开SqlSession会话（SqlSessionFactory在每个样例测试或spring容器中应仅当初始化一次）......
+        </div>
+    </a>
+    
+        <p class="post-meta" style="margin: 10px 0;">
+            Posted by Nino on
+            2019-10-13
+        </p>
+        <div class="tags">
+            
+              <a href="/tags/#mybatis" title="mybatis">mybatis</a>
+            
+        </div>
+    
+
+</div>
+<hr>
+
+<div class="post-preview">
+
     <a href="/article/dubbo5/">
         <h2 class="post-title">
             [微服务] dubbo源码解析之SPI机制
@@ -451,71 +512,6 @@ Spark任务调度原理逐行剖析代码，第一行创建SparkContext在我的
 </div>
 <hr>
 
-<div class="post-preview">
-
-    <a href="/article/springboot/">
-        <h2 class="post-title">
-            [spring] springboot源码解析
-        </h2>
-        <h3 class="post-subtitle">
-            关于springboot源码，分享一些心得
-        </h3>
-        <div class="post-content-preview">
-            前言什么是微服务架构？
-微服务架构是面向SOA、面向服务的架构，是一种将单应用程序作为独立部署的套件的架构方式。其特点是轻量级、可扩展性高、部署发布方便。
-
-
-
-在微服务架构演变中，应用程序应当将按业务进行拆分，把共用部分独立出来，例如SSO单点登陆、图片服务（裁图、传图、压缩、打码）、第三方服务（对接腾讯、阿里）、邮件服务、短信服务、会员服务、商品服务等。
-
-
-举一个典型的例子，A应用程序......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2019-01-26
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#springboot" title="springboot">springboot</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
-<div class="post-preview">
-
-    <a href="/article/hadoop/">
-        <h2 class="post-title">
-            [大数据] hadoop基础
-        </h2>
-        <h3 class="post-subtitle">
-            hadoop入门学习
-        </h3>
-        <div class="post-content-preview">
-            前言在如今大数据爆炸的时代，数据的存储和查询变得越来越重要。谈到大数据，不得不提上hadoop，那么hadoop到底是个什么呢？它本质就是一个分布式数据存储与调度系统。hadoop分为1.0和2.0两个大版本，第一个版本的hadoop主要由HDFS（分布式文件系统）和MR（MapReduce）组成。第二个版本由HDFS，MR和YARN组成，后面分析下这两个版本的区别。
-Hadoop组成HDF......
-        </div>
-    </a>
-    
-        <p class="post-meta" style="margin: 10px 0;">
-            Posted by Nino on
-            2019-01-20
-        </p>
-        <div class="tags">
-            
-              <a href="/tags/#hadoop" title="hadoop">hadoop</a>
-            
-        </div>
-    
-
-</div>
-<hr>
-
 
 
 <!-- Pager -->
@@ -561,15 +557,11 @@ Hadoop组成HDF......
             
         
             
-            <a href="/tags/#spring" title="spring" rel="5">spring</a>
+            <a href="/tags/#spring" title="spring" rel="6">spring</a>
             
         
             
             <a href="/tags/#vmvare" title="vmvare" rel="1">vmvare</a>
-            
-        
-            
-            <a href="/tags/#Dubbo" title="Dubbo" rel="5">Dubbo</a>
             
         
             
@@ -581,11 +573,15 @@ Hadoop组成HDF......
             
         
             
-            <a href="/tags/#HBase" title="HBase" rel="1">HBase</a>
+            <a href="/tags/#Dubbo" title="Dubbo" rel="5">Dubbo</a>
             
         
             
             <a href="/tags/#hadoop" title="hadoop" rel="1">hadoop</a>
+            
+        
+            
+            <a href="/tags/#HBase" title="HBase" rel="1">HBase</a>
             
         
             
@@ -594,6 +590,10 @@ Hadoop组成HDF......
         
             
             <a href="/tags/#Hexo" title="Hexo" rel="2">Hexo</a>
+            
+        
+            
+            <a href="/tags/#mybatis" title="mybatis" rel="1">mybatis</a>
             
         
             
@@ -684,6 +684,14 @@ Hadoop组成HDF......
     <ul>
       
         <li>
+          <a href="/article/springtx/">Spring事务源码解析</a>
+        </li>
+      
+        <li>
+          <a href="/article/mybatis/">Mybatis源码解析</a>
+        </li>
+      
+        <li>
           <a href="/article/dubbo5/">[微服务] dubbo源码解析之SPI机制</a>
         </li>
       
@@ -693,14 +701,6 @@ Hadoop组成HDF......
       
         <li>
           <a href="/article/dubbo3/">[微服务] dubbo源码解析之consumer订阅</a>
-        </li>
-      
-        <li>
-          <a href="/article/dubbo2/">[微服务] dubbo源码解析之provider发布</a>
-        </li>
-      
-        <li>
-          <a href="/article/dubbo/">[微服务] dubbo源码解析之初始化</a>
         </li>
       
     </ul>
@@ -727,7 +727,7 @@ Hadoop组成HDF......
         
     <h5>ARCHIVES</h5>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">3</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a><span class="archive-list-count">3</span></li></ul>
     </div>
 
         <hr>

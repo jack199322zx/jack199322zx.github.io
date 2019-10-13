@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword" content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          Spring事务源码解析 - Nino | Blog
+        
+    </title>
+
+    <link rel="canonical" href="http://www.52nino.cn/article/springtx/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/beantech.min.css">
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/article_header/article_header.png')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header">
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#spring" title="spring">spring</a>
+                            
+                        </div>
+                        <h1>Spring事务源码解析</h1>
+                        <h2 class="subheading">springtx源码解析</h2>
+                        <span class="meta">
+                            Posted by Nino on
+                            2019-10-13
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Nino</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>上个篇章讲过了mybatis与spring的集成，这里偷个油，顺带把spring事务原理解析一下。<br>配置好我们的demo，开搞。</p>
+<p><img src="/img/article/springtx/Image1.png" alt="prepare"></p>
+<p>BlogService类在初始化后会调用BlogDAO类的init方法，可以看到BlogDAO的init方法上加了@Transcational注解，在我们的配置类加上@EnableTransactionManagement注解，<br>这个注解在之前事务章节解析过，需要说明的是spring会寻找标注@Transactional注解的方法，并对其做增强，最终生成一个cglib代理类。当调用init方法时，会进入到CglibAopProxy的内部类DynamicAdvisedInterceptor的intercept方法，进而CglibMethodInvocation.proceed() -&gt; TransactionInterceptor.invoke() -&gt; TransactionAspectSupport.invokeWithinTransaction()</p>
+<p><img src="/img/article/springtx/Image2.png" alt="prepare"></p>
+<p>在这我们能看到事务处理的大致流程：创建TransactionInfo对象，事务方法执行，方法抛异常回滚，无异常提交。先从createTransactionIfNecessary说起：</p>
+<p><img src="/img/article/springtx/Image3.png" alt="prepare"></p>
+<p>委托PlatformTransactionManager.getTransaction()创建TransactionStatus对象，来详细看一下getTransaction方法。</p>
+<p><img src="/img/article/springtx/Image4.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image5.png" alt="prepare"></p>
+<p>来到DataSourceTransactionManager.doGetTransaction()方法，进入到TransactionSynchronizationManager.getResource()，从ThreadLocal变量resources中获取DataSource对应的value，这里首次获取为null。</p>
+<p><img src="/img/article/springtx/Image6.png" alt="prepare"></p>
+<p>于是乎我们得到了这样一个transaction:</p>
+<p><img src="/img/article/springtx/Image7.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image8.png" alt="prepare"></p>
+<p>进入到suspend方法，首先判断TransactionSynchronizationManager.isSynchronizationActive()，首次进入也是null，于是乎suspend方法直接返回null</p>
+<p><img src="/img/article/springtx/Image9.png" alt="prepare"></p>
+<p>重点来看一下getTransaction()方法中这段代码：</p>
+<p><img src="/img/article/springtx/Image10.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image11.png" alt="prepare"></p>
+<p>actualNewSynchronization返回true，于是乎我们得到了一个这样的TransactionStatus：</p>
+<p><img src="/img/article/springtx/Image12.png" alt="prepare"></p>
+<p>我们来到deBegin方法，首先与数据源建立连接，并将ConnectionHolder绑定到transaction上边，设置connectionHolder的transactionActive和synchronizedWithTransaction值为true，设置transaction的mustRestoreAutoCommit和newConnectionHolder为true。</p>
+<p><img src="/img/article/springtx/Image13.png" alt="prepare"></p>
+<p>由于是首次创建ConnectionHolder，执行TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder())，来看一下这个方法：</p>
+<p><img src="/img/article/springtx/Image14.png" alt="prepare"></p>
+<p>其实就是将key和value绑定到resources上，这里的resources变量就是之前的ThreadLocal变量。<br>我们回到getTransaction()方法，进入到prepareSynchronization方法：</p>
+<p><img src="/img/article/springtx/Image15.png" alt="prepare"></p>
+<p>TransactionSynchronizationManager持有以下static变量：</p>
+<p><img src="/img/article/springtx/Image16.png" alt="prepare"></p>
+<p>把这段代码翻译一下，实际上就是将actualTransactionActive设置为true，currentTransactionIsolationLevel设置为null，synchronizations设置为空的set。<br>好了，做完这些之后，TransactionStatus就创建完毕了，再回到createTransactionIfNecessary方法，进入到prepareTransactionInfo方法：</p>
+<p><img src="/img/article/springtx/Image17.png" alt="prepare"></p>
+<p>来看一下bindToThread()方法：</p>
+<p><img src="/img/article/springtx/Image18.png" alt="prepare"></p>
+<p>将当前的TransactionInfo对象保存到transactionInfoHolder里边。<br>于是乎，调用invocation.proceedWithInvocation()，我们来到了嵌套事务方法的执行，即PersonDAO.init()方法，再次走一遍之前相似的过程，我们再来体会一下，<br>doGetTransaction从threadLocal变量中取到了之前同一个数据源对应的ConnectionHolder，并绑定到DataSourceTransactionObject对象上，isExistingTransaction判断中由于之前的ConnectionHolder已经设置为active，返回true，进入到handleExistingTransaction方法。</p>
+<p><img src="/img/article/springtx/Image19.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image20.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image21.png" alt="prepare"></p>
+<p>这里我们PersonDAO.init方法设置的事务传播级别为PROPAGATION_REQUIRES_NEW，先分析此种情况：</p>
+<p><img src="/img/article/springtx/Image22.png" alt="prepare"></p>
+<p>再次来到suspend，这里不得不提一下，mybatis与spring集成时，在ClassPathMapperScanner的processBeanDefinitions方法中向MapperFactoryBean中添加了sqlSessionFactory属性，</p>
+<p><img src="/img/article/springtx/Image23.png" alt="prepare"></p>
+<p>向其中添加了SqlSessionInterceptor，用来拦截SQL的执行，当我们在执行一条SQL的时候，首先是由代理类 -&gt; MapperProxy.invoke() -&gt; MapperMethod.execute() -&gt; SqlSessionTemplate.insert(update/delete..) -&gt;<br>SqlSessionInterceptor.invoke() -&gt; SqlSessionUtils.getSqlSession() -&gt; registerSessionHolder()</p>
+<p><img src="/img/article/springtx/Image24.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image25.png" alt="prepare"></p>
+<p>在registerSessionHolder时，向TransactionSynchronizationManager注册了SqlSessionSynchronization，这里TransactionSynchronizationManager.isSynchronizationActive()判断为true，doSuspendSynchronization过程中会调用SqlSessionSynchronization的suspend()方法中将会把SqlSessionFactory与SqlSessionHolder解绑，从resources变量中移除，synchronizations清空</p>
+<p><img src="/img/article/springtx/Image26.png" alt="prepare"></p>
+<p><img src="/img/article/springtx/Image27.png" alt="prepare"></p>
+<p>doSuspend方法将会把transaction与ConnectionHolder解绑，并且将resources变量中移除，接下来 TransactionSynchronizationManager.setCurrentTransactionName(null)<br>TransactionSynchronizationManager.setCurrentTransactionName(false)<br>TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(null)<br>TransactionSynchronizationManager.setActualTransactionActive(false)，将所有的threadLocal变量恢复到原始状态，并且在恢复之前存了一个SuspenedResourcesHolder来保存这个时候的同步状态以便后续恢复，<br>接下doBegin，prepareSynchronization和之前的过程相同，这里不再赘述。<br>假定suspend过程未发生异常，接下来的情况不爱乎分为两种，一是执行嵌套事务方法跑出异常，二是成功执行，无论是哪种状态，最后都需要恢复原先父事务的状态。提交或回滚的过程太多，这里不再解析，有兴趣的朋友可自行debug，下面是我对spring事务传播级别做的总结。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>spring的主要几种事务传播级别可做如此总结：<br>Propagation.REQUIRES_NEW， 如果存在父事务，则将父事务挂起，子事务在一个单独的环境中执行，<br>若抛出异常，父事务未捕获，则父事务，子事务都回滚；<br>若抛出异常，父事务捕获，则父事务提交或回滚都由自己的状态决定，子事务回滚；<br>若未抛出异常，父事务提交或回滚由自己的状态决定，子事务提交。<br>Propagation.REQUIRED， 如果存在父事务，则子事务和父事务在同一个环境中执行。如果没有事务则开启一个新的事务。<br>若抛出异常，事务将会被设置为rollback-only，此时若父事务捕获异常，将会报错；<br>若抛出异常，父事务未捕获，则父事务，子事务都回滚；<br>若未抛出异常，子事务最终提交或回滚由父事务的状态决定。<br>Propagation.NESTED， 如果存在父事务，则<br>若抛出异常，父事务未捕获，则父事务，子事务都回滚；<br>若抛出异常，父事务捕获，则父事务回滚到执行子事务之前的savePoint（好像没执行过子事务一样），子事务回滚；<br>若未抛出异常，子事务最终提交或回滚由父事务的状态决定。</p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/article/mybatis/" data-toggle="tooltip" data-placement="top" title="Mybatis源码解析">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#正文"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">正文</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#总结"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">总结</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#spring" title="spring">spring</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://www.zhihu.com/people/shao-shuai-4-53-60" target="_blank">知乎</a></li>
+                    
+                        <li><a href="https://github.com/jack199322zx" target="_blank">github</a></li>
+                    
+                        <li><a href="https://weibo.com/u/6122805581/home" target="_blank">新浪微博</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/JackSson1993">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/shao-shuai-4-53-60">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="http://weibo.com/6122805581">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://github.com/jack199322zx">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Nino 2019 
+                    <br>
+                    Theme by <a href="http://beantech.org">BeanTech</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    re-Ported by <a href="http://www.52nino.cn">Nino</a> |
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0" width="91px" height="20px" src="https://ghbtns.com/github-btn.html?user=jack199322zx&repo=jack199322zx.github.io&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("http://www.52nino.cn/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-XXXXXXXX-X';
+    var _gaDomain = 'yoursite';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = 'r45fhy7653897235wg5ye709d930f62e';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="http://www.52nino.cn/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
